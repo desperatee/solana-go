@@ -94,11 +94,11 @@ func newHTTP() *fasthttp.Client {
 		ReadTimeout:                   time.Second,
 		WriteTimeout:                  time.Second,
 		MaxIdleConnDuration:           time.Hour,
-		MaxConnsPerHost:               1024,
+		MaxConnsPerHost:               10000,
 		DisableHeaderNamesNormalizing: true,
 		DisablePathNormalizing:        true,
 		Dial: (&fasthttp.TCPDialer{
-			Concurrency:      4096,
+			Concurrency:      10000,
 			DNSCacheDuration: time.Hour,
 		}).DialDualStack,
 		TLSConfig: &tls.Config{
