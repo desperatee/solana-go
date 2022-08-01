@@ -32,7 +32,7 @@ var tokenListMintsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, _ []string) error {
 		rpcCli := getClient()
 
-		mints, err := token.FetchMints(cmd.Context(), rpcCli)
+		mints, err := token.FetchMints(rpcCli)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve mints: %w", err)
 		}

@@ -42,7 +42,7 @@ var tokenRegistryGetCmd = &cobra.Command{
 			return fmt.Errorf("invalid mint address %q: %w", address, err)
 		}
 
-		t, err := tokenregistry.GetTokenRegistryEntry(cmd.Context(), client, pubKey)
+		t, err := tokenregistry.GetTokenRegistryEntry(client, pubKey)
 		if err != nil {
 			if err == rpc.ErrNotFound {
 				fmt.Printf("No token registry entry found for given mint %q", pubKey.String())

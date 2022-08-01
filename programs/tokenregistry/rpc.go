@@ -18,16 +18,14 @@
 package tokenregistry
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/desperatee/solana-go"
 	"github.com/desperatee/solana-go/rpc"
 )
 
-func GetTokenRegistryEntry(ctx context.Context, rpcCli *rpc.Client, mintAddress solana.PublicKey) (*TokenMeta, error) {
+func GetTokenRegistryEntry(rpcCli *rpc.Client, mintAddress solana.PublicKey) (*TokenMeta, error) {
 	resp, err := rpcCli.GetProgramAccountsWithOpts(
-		ctx,
 		ProgramID(),
 		&rpc.GetProgramAccountsOpts{
 			Filters: []rpc.RPCFilter{
@@ -58,9 +56,8 @@ func GetTokenRegistryEntry(ctx context.Context, rpcCli *rpc.Client, mintAddress 
 	return nil, rpc.ErrNotFound
 }
 
-func GetEntries(ctx context.Context, rpcCli *rpc.Client) (out []*TokenMeta, err error) {
+func GetEntries(rpcCli *rpc.Client) (out []*TokenMeta, err error) {
 	resp, err := rpcCli.GetProgramAccountsWithOpts(
-		ctx,
 		ProgramID(),
 		&rpc.GetProgramAccountsOpts{
 			Filters: []rpc.RPCFilter{

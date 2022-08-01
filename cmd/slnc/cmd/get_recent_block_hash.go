@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
@@ -31,9 +30,8 @@ var getRecentBlockhashCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := getClient()
-		ctx := context.Background()
 
-		resp, err := client.GetRecentBlockhash(ctx, "")
+		resp, err := client.GetRecentBlockhash("")
 		if err != nil {
 			return err
 		}

@@ -19,14 +19,13 @@ package serum
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 
 	rice "github.com/GeertJohan/go.rice"
-	bin "github.com/gagliardetto/binary"
 	"github.com/desperatee/solana-go"
 	"github.com/desperatee/solana-go/rpc"
 	"github.com/desperatee/solana-go/rpc/ws"
+	bin "github.com/gagliardetto/binary"
 	"go.uber.org/zap"
 )
 
@@ -48,8 +47,8 @@ func KnownMarket() ([]*MarketMeta, error) {
 	return markets, nil
 }
 
-func FetchOpenOrders(ctx context.Context, rpcCli *rpc.Client, openOrdersAddr solana.PublicKey) (*OpenOrdersMeta, error) {
-	acctInfo, err := rpcCli.GetAccountInfo(ctx, openOrdersAddr)
+func FetchOpenOrders(rpcCli *rpc.Client, openOrdersAddr solana.PublicKey) (*OpenOrdersMeta, error) {
+	acctInfo, err := rpcCli.GetAccountInfo(openOrdersAddr)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get open orders account:%w", err)
 	}
@@ -63,8 +62,8 @@ func FetchOpenOrders(ctx context.Context, rpcCli *rpc.Client, openOrdersAddr sol
 	return openOrdersMeta, nil
 }
 
-func FetchMarket(ctx context.Context, rpcCli *rpc.Client, marketAddr solana.PublicKey) (*MarketMeta, error) {
-	acctInfo, err := rpcCli.GetAccountInfo(ctx, marketAddr)
+func FetchMarket(rpcCli *rpc.Client, marketAddr solana.PublicKey) (*MarketMeta, error) {
+	acctInfo, err := rpcCli.GetAccountInfo(marketAddr)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get market account:%w", err)
 	}
@@ -90,11 +89,11 @@ func FetchMarket(ctx context.Context, rpcCli *rpc.Client, marketAddr solana.Publ
 		return nil, fmt.Errorf("unsupported market data length: %d", dataLen)
 	}
 
-	if err := rpcCli.GetAccountDataInto(ctx, meta.MarketV2.QuoteMint, &meta.QuoteMint); err != nil {
+	if err := rpcCli.GetAccountDataInto(meta.MarketV2.QuoteMint, &meta.QuoteMint); err != nil {
 		return nil, fmt.Errorf("getting quote mint: %w", err)
 	}
 
-	if err := rpcCli.GetAccountDataInto(ctx, meta.MarketV2.BaseMint, &meta.BaseMint); err != nil {
+	if err := rpcCli.GetAccountDataInto(meta.MarketV2.BaseMint, &meta.BaseMint); err != nil {
 		return nil, fmt.Errorf("getting base token: %w", err)
 	}
 

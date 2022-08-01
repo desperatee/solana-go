@@ -37,7 +37,6 @@ var getProgramAccountsCmd = &cobra.Command{
 		client := getClient()
 
 		resp, err := client.GetProgramAccounts(
-			cmd.Context(),
 			solana.MustPublicKeyFromBase58(args[0]),
 		)
 		if err != nil {

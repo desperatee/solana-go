@@ -18,7 +18,6 @@
 package token
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/desperatee/solana-go/rpc"
@@ -36,9 +35,8 @@ func (mint *Mint) Decode(data []byte) error {
 	return nil
 }
 
-func FetchMints(ctx context.Context, rpcCli *rpc.Client) (out []*Mint, err error) {
+func FetchMints(rpcCli *rpc.Client) (out []*Mint, err error) {
 	resp, err := rpcCli.GetProgramAccountsWithOpts(
-		ctx,
 		ProgramID,
 		&rpc.GetProgramAccountsOpts{
 			Filters: []rpc.RPCFilter{

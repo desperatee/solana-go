@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"math/big"
 	"strings"
@@ -35,7 +34,6 @@ var serumGetMarketCmd = &cobra.Command{
 	Short: "Get Serum orderbook for a given market",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := cmd.Context()
 
 		marketAddr, err := solana.PublicKeyFromBase58(args[0])
 		if err != nil {
@@ -43,17 +41,17 @@ var serumGetMarketCmd = &cobra.Command{
 		}
 
 		cli := getClient()
-		market, err := serum.FetchMarket(ctx, cli, marketAddr)
+		market, err := serum.FetchMarket(cli, marketAddr)
 		if err != nil {
 			return fmt.Errorf("fetch market: %w", err)
 		}
 
-		asks, askSize, err := getOrderBook(ctx, market, cli, market.MarketV2.Asks, false)
+		asks, askSize, err := getOrderBook(market, cli, market.MarketV2.Asks, false)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve asks: %w", err)
 		}
 
-		bids, bidSize, err := getOrderBook(ctx, market, cli, market.MarketV2.Bids, true)
+		bids, bidSize, err := getOrderBook(market, cli, market.MarketV2.Bids, true)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve bids: %w", err)
 		}
@@ -92,9 +90,9 @@ type orderBookEntry struct {
 	quantity *big.Float
 }
 
-func getOrderBook(ctx context.Context, market *serum.MarketMeta, cli *rpc.Client, address solana.PublicKey, desc bool) (out []*orderBookEntry, totalSize *big.Float, err error) {
+func getOrderBook(market *serum.MarketMeta, cli *rpc.Client, address solana.PublicKey, desc bool) (out []*orderBookEntry, totalSize *big.Float, err error) {
 	var o serum.Orderbook
-	if err := cli.GetAccountDataInto(ctx, address, &o); err != nil {
+	if err := cli.GetAccountDataInto(address, &o); err != nil {
 		return nil, nil, fmt.Errorf("getting orderbook: %w", err)
 	}
 

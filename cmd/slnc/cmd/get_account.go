@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
@@ -33,9 +32,8 @@ var getAccountCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := getClient()
-		ctx := context.Background()
 
-		resp, err := client.GetAccountInfo(ctx, solana.MustPublicKeyFromBase58(args[0]))
+		resp, err := client.GetAccountInfo(solana.MustPublicKeyFromBase58(args[0]))
 		if err != nil {
 			return err
 		}

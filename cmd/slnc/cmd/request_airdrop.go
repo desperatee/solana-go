@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -46,7 +45,6 @@ var requestCmd = &cobra.Command{
 		}
 
 		airDrop, err := client.RequestAirdrop(
-			context.Background(),
 			address,
 			uint64(lamport),
 			rpc.CommitmentMax,

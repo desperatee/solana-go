@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -31,7 +30,6 @@ var systemTransferCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := getClient()
 		// v := mustGetWallet()
-		ctx := context.Background()
 
 		from := args[0]
 		to := args[1]
@@ -40,7 +38,6 @@ var systemTransferCmd = &cobra.Command{
 		fmt.Println(from, to, amount)
 
 		_ = client
-		_ = ctx
 
 		return nil
 	},

@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -32,14 +31,13 @@ var getConfirmedBlockCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		client := getClient()
-		ctx := context.Background()
 
 		var slot int64
 		if slot, err = strconv.ParseInt(args[0], 10, 64); err != nil {
 			return fmt.Errorf("unable to parse provided slot number %q: %w", args[0], err)
 		}
 
-		resp, err := client.GetConfirmedBlock(ctx, uint64(slot))
+		resp, err := client.GetConfirmedBlock(uint64(slot))
 		if err != nil {
 			return err
 		}

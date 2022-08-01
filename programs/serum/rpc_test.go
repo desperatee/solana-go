@@ -42,12 +42,11 @@ func TestFetchMarket(t *testing.T) {
 	//
 
 	client := rpc.New(rpcURL)
-	ctx := context.Background()
 
 	openOrderAdd, err := solana.PublicKeyFromBase58("jFoHUkNDC767PyK11cZM4zyNcpjLqFnSjaqEYp5GVBr")
 	require.NoError(t, err)
 
-	openOrders, err := FetchOpenOrders(ctx, client, openOrderAdd)
+	openOrders, err := FetchOpenOrders(client, openOrderAdd)
 	require.NoError(t, err)
 
 	cnt, err := json.MarshalIndent(openOrders.OpenOrders, "", " ")

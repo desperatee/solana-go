@@ -32,7 +32,6 @@ var getBalanceCmd = &cobra.Command{
 		client := getClient()
 
 		resp, err := client.GetBalance(
-			cmd.Context(),
 			solana.MustPublicKeyFromBase58(args[0]),
 			"",
 		)

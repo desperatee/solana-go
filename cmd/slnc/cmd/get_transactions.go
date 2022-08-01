@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -38,7 +37,6 @@ var getTransactionsCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := getClient()
-		ctx := context.Background()
 
 		address := args[0]
 		pubKey, err := solana.PublicKeyFromBase58(address)
@@ -47,7 +45,7 @@ var getTransactionsCmd = &cobra.Command{
 		}
 
 		limit := uint64(1)
-		csList, err := client.GetConfirmedSignaturesForAddress2(ctx, pubKey, &rpc.GetConfirmedSignaturesForAddress2Opts{
+		csList, err := client.GetConfirmedSignaturesForAddress2(pubKey, &rpc.GetConfirmedSignaturesForAddress2Opts{
 			Limit: &limit,
 			// Before: "",
 			// Until:  "",
@@ -66,7 +64,7 @@ var getTransactionsCmd = &cobra.Command{
 			text.EncoderColorGreen.Print("Memo: ")
 			fmt.Println(cs.Memo)
 
-			ct, err := client.GetConfirmedTransaction(ctx, cs.Signature)
+			ct, err := client.GetConfirmedTransaction(cs.Signature)
 			if err != nil {
 				return fmt.Errorf("unable to get confirmed transaction with signature %q: %w", cs.Signature, err)
 			}

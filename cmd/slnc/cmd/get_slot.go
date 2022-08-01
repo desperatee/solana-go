@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -30,9 +29,8 @@ var getSlotCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := getClient()
-		ctx := context.Background()
 
-		resp, err := client.GetSlot(ctx, "")
+		resp, err := client.GetSlot("")
 		if err != nil {
 			return err
 		}

@@ -18,7 +18,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/desperatee/solana-go/rpc"
@@ -88,7 +87,7 @@ var tokenRegistryRegisterCmd = &cobra.Command{
 			return fmt.Errorf("registrar key must be present in the vault to register a token")
 		}
 
-		blockHashResult, err := client.GetRecentBlockhash(context.Background(), rpc.CommitmentMax)
+		blockHashResult, err := client.GetRecentBlockhash(rpc.CommitmentMax)
 		if err != nil {
 			return fmt.Errorf("unable retrieve recent block hash: %w", err)
 		}
@@ -96,7 +95,6 @@ var tokenRegistryRegisterCmd = &cobra.Command{
 		tokenMetaAccount := solana.NewWallet()
 
 		lamport, err := client.GetMinimumBalanceForRentExemption(
-			context.Background(),
 			tokenregistry.TOKEN_META_SIZE,
 			rpc.CommitmentMax,
 		)
@@ -146,7 +144,7 @@ var tokenRegistryRegisterCmd = &cobra.Command{
 			return fmt.Errorf("unable to sign transaction: %w", err)
 		}
 
-		trxHash, err := client.SendTransaction(cmd.Context(), trx)
+		trxHash, err := client.SendTransaction(trx)
 		if err != nil {
 			return fmt.Errorf("unable to send transaction: %w", err)
 		}

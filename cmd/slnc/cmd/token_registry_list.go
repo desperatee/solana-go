@@ -35,7 +35,7 @@ var tokenRegistryListCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := getClient()
 
-		entries, err := tokenregistry.GetEntries(cmd.Context(), client)
+		entries, err := tokenregistry.GetEntries(client)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve entries: %w", err)
 		}
