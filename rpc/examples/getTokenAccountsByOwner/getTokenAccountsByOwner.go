@@ -15,13 +15,11 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/programs/token"
+	"github.com/desperatee/solana-go/rpc"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/programs/token"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 func main() {
@@ -30,7 +28,6 @@ func main() {
 
 	pubKey := solana.MustPublicKeyFromBase58("7HZaCWazgTuuFuajxaaxGYbGnyVKwxvsJKue1W4Nvyro")
 	out, err := client.GetTokenAccountsByOwner(
-		context.TODO(),
 		pubKey,
 		&rpc.GetTokenAccountsConfig{
 			Mint: solana.WrappedSol.ToPointer(),

@@ -16,13 +16,8 @@
 // limitations under the License.
 package rpc
 
-import (
-	"context"
-)
-
 // GetMinimumBalanceForRentExemption returns minimum balance required to make account rent exempt.
 func (cl *Client) GetMinimumBalanceForRentExemption(
-	ctx context.Context,
 	dataSize uint64,
 	commitment CommitmentType, // optional
 ) (lamport uint64, err error) {
@@ -30,6 +25,6 @@ func (cl *Client) GetMinimumBalanceForRentExemption(
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &lamport, "getMinimumBalanceForRentExemption", params)
+	err = cl.rpcClient.CallForInto(&lamport, "getMinimumBalanceForRentExemption", params)
 	return
 }

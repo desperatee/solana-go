@@ -17,16 +17,14 @@
 package rpc
 
 import (
-	"context"
 	"encoding/base64"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // SendRawTransaction submits a signed transaction to the cluster for processing.
 // The only difference between this function and SignTransaction is that the latter takes a *solana.Transaction value, as the former takes a transaction in wire format as a byte array
 func (cl *Client) SendRawTransaction(
-	ctx context.Context,
 	rawTx []byte,
 ) (signature solana.Signature, err error) {
 	opts := TransactionOpts{
@@ -35,7 +33,6 @@ func (cl *Client) SendRawTransaction(
 	}
 
 	return cl.SendRawTransactionWithOpts(
-		ctx,
 		rawTx,
 		opts,
 	)
@@ -43,12 +40,10 @@ func (cl *Client) SendRawTransaction(
 
 // SendRawTransactionWithOpts submits a raw encoded transaction as a byte array to the cluster for processing.
 func (cl *Client) SendRawTransactionWithOpts(
-	ctx context.Context,
 	rawTx []byte,
 	opts TransactionOpts,
 ) (signature solana.Signature, err error) {
 	return cl.SendEncodedTransactionWithOpts(
-		ctx,
 		base64.StdEncoding.EncodeToString(rawTx),
 		opts,
 	)

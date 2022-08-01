@@ -15,12 +15,10 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 func main() {
@@ -30,7 +28,6 @@ func main() {
 	txSig := solana.MustSignatureFromBase58("4bjVLV1g9SAfv7BSAdNnuSPRbSscADHFe4HegL6YVcuEBMY83edLEvtfjE4jfr6rwdLwKBQbaFiGgoLGtVicDzHq")
 	{
 		out, err := client.GetTransaction(
-			context.TODO(),
 			txSig,
 			nil,
 		)
@@ -42,7 +39,6 @@ func main() {
 	}
 	{
 		out, err := client.GetTransaction(
-			context.TODO(),
 			txSig,
 			&rpc.GetTransactionOpts{
 				Encoding: solana.EncodingJSON,
@@ -56,7 +52,6 @@ func main() {
 	}
 	{
 		out, err := client.GetTransaction(
-			context.TODO(),
 			txSig,
 			&rpc.GetTransactionOpts{
 				Encoding: solana.EncodingBase58,
@@ -70,7 +65,6 @@ func main() {
 	}
 	{
 		out, err := client.GetTransaction(
-			context.TODO(),
 			txSig,
 			&rpc.GetTransactionOpts{
 				Encoding: solana.EncodingBase64,

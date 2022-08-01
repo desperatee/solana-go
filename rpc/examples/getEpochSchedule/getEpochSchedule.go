@@ -15,19 +15,15 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	out, err := client.GetEpochSchedule(
-		context.TODO(),
-	)
+	out, err := client.GetEpochSchedule()
 	if err != nil {
 		panic(err)
 	}

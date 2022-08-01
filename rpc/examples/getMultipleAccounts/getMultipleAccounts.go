@@ -15,11 +15,9 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -28,7 +26,6 @@ func main() {
 
 	{
 		out, err := client.GetMultipleAccounts(
-			context.TODO(),
 			solana.MustPublicKeyFromBase58("SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt"),  // serum token
 			solana.MustPublicKeyFromBase58("4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"), // raydium token
 		)
@@ -39,7 +36,6 @@ func main() {
 	}
 	{
 		out, err := client.GetMultipleAccountsWithOpts(
-			context.TODO(),
 			[]solana.PublicKey{solana.MustPublicKeyFromBase58("SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt"), // serum token
 				solana.MustPublicKeyFromBase58("4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"), // raydium token
 			},

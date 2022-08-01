@@ -15,14 +15,11 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetTokenSupply returns the total supply of an SPL Token type.
 func (cl *Client) GetTokenSupply(
-	ctx context.Context,
 	tokenMint solana.PublicKey, // Pubkey of token Mint to query
 	commitment CommitmentType, // optional
 ) (out *GetTokenSupplyResult, err error) {
@@ -32,7 +29,7 @@ func (cl *Client) GetTokenSupply(
 			M{"commitment": commitment},
 		)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenSupply", params)
+	err = cl.rpcClient.CallForInto(&out, "getTokenSupply", params)
 	return
 }
 

@@ -15,24 +15,22 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	example, err := client.GetRecentBlockhash(context.TODO(), rpc.CommitmentFinalized)
+	example, err := client.GetRecentBlockhash(rpc.CommitmentFinalized)
 	if err != nil {
 		panic(err)
 	}
 
 	{
-		out, err := client.GetBlock(context.TODO(), uint64(example.Context.Slot))
+		out, err := client.GetBlock(uint64(example.Context.Slot))
 		if err != nil {
 			panic(err)
 		}
@@ -43,7 +41,6 @@ func main() {
 	{
 		includeRewards := false
 		out, err := client.GetBlockWithOpts(
-			context.TODO(),
 			uint64(example.Context.Slot),
 			// You can specify more options here:
 			&rpc.GetBlockOpts{

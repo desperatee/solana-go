@@ -15,10 +15,8 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -26,7 +24,6 @@ func main() {
 	client := rpc.New(endpoint)
 
 	example, err := client.GetLatestBlockhash(
-		context.Background(),
 		rpc.CommitmentFinalized,
 	)
 	if err != nil {

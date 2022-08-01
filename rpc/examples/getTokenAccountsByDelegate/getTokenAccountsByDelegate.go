@@ -15,11 +15,9 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -28,7 +26,6 @@ func main() {
 
 	pubKey := solana.MustPublicKeyFromBase58("AfkALUPjQp8R1rUwE6KhT38NuTYWCncwwHwcJu7UtAfV")
 	out, err := client.GetTokenAccountsByDelegate(
-		context.TODO(),
 		pubKey,
 		&rpc.GetTokenAccountsConfig{
 			Mint: solana.MustPublicKeyFromBase58("So11111111111111111111111111111111111111112").ToPointer(),

@@ -15,13 +15,12 @@
 package main
 
 import (
-	"context"
 	"encoding/base64"
 	"fmt"
 
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 func main() {
@@ -39,7 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	sig, err := client.SendTransaction(context.TODO(), tx)
+	sig, err := client.SendTransaction(tx)
 	if err != nil {
 		panic(err)
 	}

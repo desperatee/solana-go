@@ -19,15 +19,14 @@ package rpc
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	stdjson "encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/AlekSi/pointer"
+	"github.com/desperatee/solana-go"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,7 +39,7 @@ func TestClient_GetAccountInfo(t *testing.T) {
 
 	pubkeyString := "7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932"
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
-	out, err := client.GetAccountInfo(context.Background(), pubKey)
+	out, err := client.GetAccountInfo(pubKey)
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -100,7 +99,6 @@ func TestClient_GetAccountInfoWithOpts(t *testing.T) {
 		},
 	}
 	_, err := client.GetAccountInfoWithOpts(
-		context.Background(),
 		pubKey,
 		opts,
 	)
@@ -134,7 +132,7 @@ func TestClient_GetConfirmedSignaturesForAddress2(t *testing.T) {
 
 	account := solana.MustPublicKeyFromBase58("H7ATJQGhwG8Uf8sUntUognFpsKixPy2buFnXkvyNbGUb")
 	limit := uint64(1)
-	out, err := client.GetConfirmedSignaturesForAddress2(context.Background(), account, &GetConfirmedSignaturesForAddress2Opts{Limit: &limit})
+	out, err := client.GetConfirmedSignaturesForAddress2(account, &GetConfirmedSignaturesForAddress2Opts{Limit: &limit})
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -162,7 +160,6 @@ func TestClient_GetConfirmedTransaction(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetConfirmedTransaction(
-		context.Background(),
 		solana.MustSignatureFromBase58("53hoZ98EsCMA6L63GWM65M3Bd3WqA4LxD8bcJkbKoKWhbJFqX9M1WZ4fSjt8bYyZn21NwNnV2A25zirBni9Qk6LR"),
 	)
 	require.NoError(t, err)
@@ -255,7 +252,6 @@ func TestClient_GetRecentBlockhash(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetRecentBlockhash(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -291,7 +287,6 @@ func TestClient_GetBalance(t *testing.T) {
 	pubkeyString := "7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932"
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
 	out, err := client.GetBalance(
-		context.Background(),
 		pubKey,
 		CommitmentMax,
 	)
@@ -330,7 +325,6 @@ func TestClient_GetBlock(t *testing.T) {
 
 	block := 33
 	out, err := client.GetBlock(
-		context.Background(),
 		uint64(block),
 	)
 	require.NoError(t, err)
@@ -491,7 +485,6 @@ func TestClient_GetBlockWithOpts(t *testing.T) {
 	rewards := true
 	maxSupportedTransactionVersion := uint64(0)
 	_, err := client.GetBlockWithOpts(
-		context.Background(),
 		uint64(block),
 		&GetBlockOpts{
 			TransactionDetails:             TransactionDetailsSignatures,
@@ -532,7 +525,6 @@ func TestClient_GetBlockHeight(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetBlockHeight(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -564,9 +556,7 @@ func TestClient_GetBlockProduction(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetBlockProduction(
-		context.Background(),
-	)
+	out, err := client.GetBlockProduction()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -598,7 +588,6 @@ func TestClient_GetBlockProductionWithOpts(t *testing.T) {
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
 	identity := pubKey
 	_, err := client.GetBlockProductionWithOpts(
-		context.Background(),
 		&GetBlockProductionOpts{
 			Commitment: CommitmentMax,
 			Range: &SlotRangeRequest{
@@ -639,7 +628,6 @@ func TestClient_GetBlockCommitment(t *testing.T) {
 	block := 33
 
 	out, err := client.GetBlockCommitment(
-		context.Background(),
 		uint64(block),
 	)
 	require.NoError(t, err)
@@ -707,7 +695,6 @@ func TestClient_GetBlocks(t *testing.T) {
 	startSlot := 1
 	endSlot := uint64(33)
 	out, err := client.GetBlocks(
-		context.Background(),
 		uint64(startSlot),
 		&endSlot,
 		CommitmentMax,
@@ -746,7 +733,6 @@ func TestClient_GetBlocksWithLimit(t *testing.T) {
 	startSlot := 1
 	limit := uint64(10)
 	out, err := client.GetBlocksWithLimit(
-		context.Background(),
 		uint64(startSlot),
 		limit,
 		CommitmentMax,
@@ -784,7 +770,6 @@ func TestClient_GetBlockTime(t *testing.T) {
 
 	block := 55
 	out, err := client.GetBlockTime(
-		context.Background(),
 		uint64(block),
 	)
 	require.NoError(t, err)
@@ -814,9 +799,7 @@ func TestClient_GetClusterNodes(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetClusterNodes(
-		context.Background(),
-	)
+	out, err := client.GetClusterNodes()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -842,7 +825,6 @@ func TestClient_GetEpochInfo(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetEpochInfo(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -881,9 +863,7 @@ func TestClient_GetEpochSchedule(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetEpochSchedule(
-		context.Background(),
-	)
+	out, err := client.GetEpochSchedule()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -909,7 +889,6 @@ func TestClient_GetFeeCalculatorForBlockhash(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetFeeCalculatorForBlockhash(
-		context.Background(),
 		solana.Hash{},
 		CommitmentMax,
 	)
@@ -943,9 +922,7 @@ func TestClient_GetFeeRateGovernor(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetFeeRateGovernor(
-		context.Background(),
-	)
+	out, err := client.GetFeeRateGovernor()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -971,7 +948,6 @@ func TestClient_GetFees(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetFees(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -1003,9 +979,7 @@ func TestClient_GetFirstAvailableBlock(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetFirstAvailableBlock(
-		context.Background(),
-	)
+	out, err := client.GetFirstAvailableBlock()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1030,9 +1004,7 @@ func TestClient_GetGenesisHash(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetGenesisHash(
-		context.Background(),
-	)
+	out, err := client.GetGenesisHash()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1057,9 +1029,7 @@ func TestClient_GetHealth(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetHealth(
-		context.Background(),
-	)
+	out, err := client.GetHealth()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1084,9 +1054,7 @@ func TestClient_GetIdentity(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetIdentity(
-		context.Background(),
-	)
+	out, err := client.GetIdentity()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1112,7 +1080,6 @@ func TestClient_GetInflationGovernor(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetInflationGovernor(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -1144,9 +1111,7 @@ func TestClient_GetInflationRate(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetInflationRate(
-		context.Background(),
-	)
+	out, err := client.GetInflationRate()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1184,7 +1149,6 @@ func TestClient_GetInflationReward(t *testing.T) {
 	}
 
 	out, err := client.GetInflationReward(
-		context.Background(),
 		keys,
 		&opts,
 	)
@@ -1223,7 +1187,6 @@ func TestClient_GetLargestAccounts(t *testing.T) {
 
 	filter := LargestAccountsFilterCirculating
 	out, err := client.GetLargestAccounts(
-		context.Background(),
 		CommitmentMax,
 		filter,
 	)
@@ -1349,7 +1312,6 @@ func TestClient_GetLeaderSchedule(t *testing.T) {
 	identity := pubKey
 
 	out, err := client.GetLeaderScheduleWithOpts(
-		context.Background(),
 		&GetLeaderScheduleOpts{
 			Epoch:      &epoch,
 			Commitment: CommitmentMax,
@@ -1387,9 +1349,7 @@ func TestClient_GetMaxRetransmitSlot(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetMaxRetransmitSlot(
-		context.Background(),
-	)
+	out, err := client.GetMaxRetransmitSlot()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1414,9 +1374,7 @@ func TestClient_GetMaxShredInsertSlot(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetMaxShredInsertSlot(
-		context.Background(),
-	)
+	out, err := client.GetMaxShredInsertSlot()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1443,7 +1401,6 @@ func TestClient_GetMinimumBalanceForRentExemption(t *testing.T) {
 
 	dataSize := uint64(1000)
 	out, err := client.GetMinimumBalanceForRentExemption(
-		context.Background(),
 		dataSize,
 		CommitmentMax,
 	)
@@ -1480,7 +1437,6 @@ func TestClient_GetMultipleAccounts(t *testing.T) {
 	pubkeyString := "7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932"
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
 	out, err := client.GetMultipleAccounts(
-		context.Background(),
 		pubKey,
 	)
 	require.NoError(t, err)
@@ -1552,7 +1508,6 @@ func TestClient_GetProgramAccounts(t *testing.T) {
 		},
 	}
 	out, err := client.GetProgramAccountsWithOpts(
-		context.Background(),
 		pubKey,
 		&opts,
 	)
@@ -1616,7 +1571,6 @@ func TestClient_GetRecentPerformanceSamples(t *testing.T) {
 
 	limit := uint(1002)
 	out, err := client.GetRecentPerformanceSamples(
-		context.Background(),
 		&limit,
 	)
 	require.NoError(t, err)
@@ -1646,9 +1600,7 @@ func TestClient_GetSnapshotSlot(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetSnapshotSlot(
-		context.Background(),
-	)
+	out, err := client.GetSnapshotSlot()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1686,7 +1638,6 @@ func TestClient_GetSignaturesForAddress(t *testing.T) {
 		Commitment: CommitmentMax,
 	}
 	out, err := client.GetSignaturesForAddressWithOpts(
-		context.Background(),
 		pubKey,
 		&opts,
 	)
@@ -1726,7 +1677,6 @@ func TestClient_GetSignatureStatuses(t *testing.T) {
 	sig1 := solana.MustSignatureFromBase58("APPAzLobMg62AW7tdot1s7qKjya4Htt7AqjvT4uMUje8FuFNKD6qnoSk3JvBrkBnBnUyknqXJUXpj9BXENSExSQ")
 	sig2 := solana.MustSignatureFromBase58("eue8eTRd4puKR2aqsW9AigzyBsF9Em4uVKWKEkMeYUuT9XevvrYwk6Ps5ApCHKEdYDYxPsmE8tb9Gik6jZM1xHT")
 	out, err := client.GetSignatureStatuses(
-		context.Background(),
 		true,
 		sig1,
 		sig2,
@@ -1765,7 +1715,6 @@ func TestClient_GetSlot(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetSlot(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -1798,7 +1747,6 @@ func TestClient_GetSlotLeader(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetSlotLeader(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -1833,7 +1781,6 @@ func TestClient_GetSlotLeaders(t *testing.T) {
 	start := uint64(83220831)
 	limit := uint64(10)
 	out, err := client.GetSlotLeaders(
-		context.Background(),
 		start,
 		limit,
 	)
@@ -1865,7 +1812,7 @@ func TestClient_GetSupply(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetSupply(context.Background(), CommitmentFinalized)
+	out, err := client.GetSupply(CommitmentFinalized)
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -1897,7 +1844,6 @@ func TestClient_GetSupply_CommitmentMax(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetSupplyWithOpts(
-		context.Background(),
 		&GetSupplyOpts{
 			Commitment:                        CommitmentMax,
 			ExcludeNonCirculatingAccountsList: false,
@@ -1935,7 +1881,6 @@ func TestClient_GetSupply_ExcludeNonCirculatingAccounts(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetSupplyWithOpts(
-		context.Background(),
 		&GetSupplyOpts{
 			Commitment:                        CommitmentConfirmed,
 			ExcludeNonCirculatingAccountsList: true,
@@ -1975,7 +1920,6 @@ func TestClient_GetTokenLargestAccounts(t *testing.T) {
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
 
 	out, err := client.GetTokenLargestAccounts(
-		context.Background(),
 		pubKey,
 		CommitmentMax,
 	)
@@ -2013,7 +1957,6 @@ func TestClient_GetTokenSupply(t *testing.T) {
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
 
 	out, err := client.GetTokenSupply(
-		context.Background(),
 		pubKey,
 		CommitmentMax,
 	)
@@ -2054,7 +1997,6 @@ func TestClient_GetTransaction(t *testing.T) {
 		Commitment: CommitmentMax,
 	}
 	out, err := client.GetTransaction(
-		context.Background(),
 		solana.MustSignatureFromBase58(tx),
 		&opts,
 	)
@@ -2158,7 +2100,6 @@ func TestClient_GetTransactionCount(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetTransactionCount(
-		context.Background(),
 		CommitmentMax,
 	)
 	require.NoError(t, err)
@@ -2190,9 +2131,7 @@ func TestClient_GetVersion(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetVersion(
-		context.Background(),
-	)
+	out, err := client.GetVersion()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -2222,7 +2161,6 @@ func TestClient_GetVoteAccounts(t *testing.T) {
 		Commitment: CommitmentMax,
 	}
 	out, err := client.GetVoteAccounts(
-		context.Background(),
 		opts,
 	)
 	require.NoError(t, err)
@@ -2255,9 +2193,7 @@ func TestClient_MinimumLedgerSlot(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.MinimumLedgerSlot(
-		context.Background(),
-	)
+	out, err := client.MinimumLedgerSlot()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -2287,7 +2223,6 @@ func TestClient_RequestAirdrop(t *testing.T) {
 
 	lamports := uint64(10000000)
 	out, err := client.RequestAirdrop(
-		context.Background(),
 		pubKey,
 		lamports,
 		CommitmentMax,
@@ -2328,7 +2263,6 @@ func TestClient_GetStakeActivation(t *testing.T) {
 
 	epoch := uint64(123)
 	out, err := client.GetStakeActivation(
-		context.Background(),
 		pubKey,
 		CommitmentMax,
 		&epoch,
@@ -2368,7 +2302,6 @@ func TestClient_GetTokenAccountBalance(t *testing.T) {
 	pubKey := solana.MustPublicKeyFromBase58(pubkeyString)
 
 	out, err := client.GetTokenAccountBalance(
-		context.Background(),
 		pubKey,
 		CommitmentMax,
 	)
@@ -2409,7 +2342,6 @@ func TestClient_GetTokenAccountsByDelegate(t *testing.T) {
 	programID := solana.MustPublicKeyFromBase58(programIDString)
 
 	out, err := client.GetTokenAccountsByDelegate(
-		context.Background(),
 		pubKey,
 		&GetTokenAccountsConfig{
 			ProgramId: &programID,
@@ -2460,7 +2392,6 @@ func TestClient_GetTokenAccountsByOwner(t *testing.T) {
 	programID := solana.MustPublicKeyFromBase58(programIDString)
 
 	out, err := client.GetTokenAccountsByOwner(
-		context.Background(),
 		pubKey,
 		&GetTokenAccountsConfig{
 			ProgramId: &programID,
@@ -2514,7 +2445,7 @@ func TestClient_SendTransaction(t *testing.T) {
 
 	client := New(server.URL)
 
-	out, err := client.SendTransaction(context.Background(), tx)
+	out, err := client.SendTransaction(tx)
 	require.NoError(t, err)
 
 	expected := mustJSONToInterface([]byte(responseBody))
@@ -2531,7 +2462,7 @@ func TestClient_SendEncodedTransaction(t *testing.T) {
 
 	client := New(server.URL)
 
-	out, err := client.SendEncodedTransaction(context.Background(), encodedTx)
+	out, err := client.SendEncodedTransaction(encodedTx)
 	require.NoError(t, err)
 
 	expected := mustJSONToInterface([]byte(responseBody))
@@ -2551,7 +2482,7 @@ func TestClient_SendRawTransaction(t *testing.T) {
 	rawTx, err := base64.StdEncoding.DecodeString(encodedTx)
 	require.NoError(t, err)
 
-	out, err := client.SendRawTransaction(context.Background(), rawTx)
+	out, err := client.SendRawTransaction(rawTx)
 	require.NoError(t, err)
 
 	expected := mustJSONToInterface([]byte(responseBody))
@@ -2571,7 +2502,6 @@ func TestClient_IsBlockhashValid(t *testing.T) {
 	blockhashString := "dv4ACNkpYPcE3aKmYDqZm9G5EB3J4MRoeE7WNDRBVJB"
 	blockhash := solana.MustHashFromBase58(blockhashString)
 	out, err := client.IsBlockhashValid(
-		context.Background(),
 		blockhash,
 		CommitmentMax,
 	)
@@ -2612,7 +2542,6 @@ func TestClient_GetFeeForMessage(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetFeeForMessage(
-		context.Background(),
 		"AQABAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAA",
 		CommitmentProcessed,
 	)
@@ -2646,9 +2575,7 @@ func TestClient_GetHighestSnapshotSlot(t *testing.T) {
 	defer closer()
 	client := New(server.URL)
 
-	out, err := client.GetHighestSnapshotSlot(
-		context.Background(),
-	)
+	out, err := client.GetHighestSnapshotSlot()
 	require.NoError(t, err)
 
 	assert.Equal(t,
@@ -2674,7 +2601,6 @@ func TestClient_GetLatestBlockhash(t *testing.T) {
 	client := New(server.URL)
 
 	out, err := client.GetLatestBlockhash(
-		context.Background(),
 		CommitmentProcessed,
 	)
 	require.NoError(t, err)

@@ -15,11 +15,9 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -29,7 +27,6 @@ func main() {
 	amount := solana.LAMPORTS_PER_SOL // 1 sol
 	pubKey := solana.MustPublicKeyFromBase58("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	out, err := client.RequestAirdrop(
-		context.TODO(),
 		pubKey,
 		amount,
 		"",

@@ -15,10 +15,9 @@
 package rpc
 
 import (
-	"context"
 	"errors"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type GetMultipleAccountsResult struct {
@@ -28,11 +27,9 @@ type GetMultipleAccountsResult struct {
 
 // GetMultipleAccounts returns the account information for a list of Pubkeys.
 func (cl *Client) GetMultipleAccounts(
-	ctx context.Context,
 	accounts ...solana.PublicKey, // An array of Pubkeys to query
 ) (out *GetMultipleAccountsResult, err error) {
 	return cl.GetMultipleAccountsWithOpts(
-		ctx,
 		accounts,
 		nil,
 	)
@@ -42,7 +39,6 @@ type GetMultipleAccountsOpts GetAccountInfoOpts
 
 // GetMultipleAccountsWithOpts returns the account information for a list of Pubkeys.
 func (cl *Client) GetMultipleAccountsWithOpts(
-	ctx context.Context,
 	accounts []solana.PublicKey,
 	opts *GetMultipleAccountsOpts,
 ) (out *GetMultipleAccountsResult, err error) {
@@ -70,7 +66,7 @@ func (cl *Client) GetMultipleAccountsWithOpts(
 		}
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getMultipleAccounts", params)
+	err = cl.rpcClient.CallForInto(&out, "getMultipleAccounts", params)
 	if err != nil {
 		return nil, err
 	}

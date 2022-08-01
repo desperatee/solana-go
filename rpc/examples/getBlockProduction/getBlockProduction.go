@@ -15,10 +15,8 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -26,7 +24,7 @@ func main() {
 	client := rpc.New(endpoint)
 
 	{
-		out, err := client.GetBlockProduction(context.TODO())
+		out, err := client.GetBlockProduction()
 		if err != nil {
 			panic(err)
 		}
@@ -34,7 +32,6 @@ func main() {
 	}
 	{
 		out, err := client.GetBlockProductionWithOpts(
-			context.TODO(),
 			&rpc.GetBlockProductionOpts{
 				Commitment: rpc.CommitmentFinalized,
 				// Range: &rpc.SlotRangeRequest{

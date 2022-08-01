@@ -14,17 +14,12 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetBlockCommitment returns commitment for particular block.
 func (cl *Client) GetBlockCommitment(
-	ctx context.Context,
 	block uint64, // block, identified by Slot
 ) (out *GetBlockCommitmentResult, err error) {
 	params := []interface{}{block}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getBlockCommitment", params)
+	err = cl.rpcClient.CallForInto(&out, "getBlockCommitment", params)
 	return
 }
 

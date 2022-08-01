@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetBlockTime returns the estimated production time of a block.
@@ -32,10 +30,9 @@ import (
 // as Unix timestamp (seconds since the Unix epoch),
 // or nil if the timestamp is not available for this block.
 func (cl *Client) GetBlockTime(
-	ctx context.Context,
 	block uint64, // block, identified by Slot
 ) (out *solana.UnixTimeSeconds, err error) {
 	params := []interface{}{block}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getBlockTime", params)
+	err = cl.rpcClient.CallForInto(&out, "getBlockTime", params)
 	return
 }

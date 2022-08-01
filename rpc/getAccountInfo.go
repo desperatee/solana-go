@@ -17,17 +17,15 @@
 package rpc
 
 import (
-	"context"
 	"errors"
 
+	"github.com/desperatee/solana-go"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
 )
 
 // GetAccountInfo returns all information associated with the account of provided publicKey.
-func (cl *Client) GetAccountInfo(ctx context.Context, account solana.PublicKey) (out *GetAccountInfoResult, err error) {
+func (cl *Client) GetAccountInfo(account solana.PublicKey) (out *GetAccountInfoResult, err error) {
 	return cl.GetAccountInfoWithOpts(
-		ctx,
 		account,
 		&GetAccountInfoOpts{
 			Commitment: "",
@@ -38,8 +36,8 @@ func (cl *Client) GetAccountInfo(ctx context.Context, account solana.PublicKey) 
 
 // GetAccountDataInto decodes the binary data and populates
 // the provided `inVar` parameter with all data associated with the account of provided publicKey.
-func (cl *Client) GetAccountDataInto(ctx context.Context, account solana.PublicKey, inVar interface{}) (err error) {
-	resp, err := cl.GetAccountInfo(ctx, account)
+func (cl *Client) GetAccountDataInto(account solana.PublicKey, inVar interface{}) (err error) {
+	resp, err := cl.GetAccountInfo(account)
 	if err != nil {
 		return err
 	}
@@ -48,8 +46,8 @@ func (cl *Client) GetAccountDataInto(ctx context.Context, account solana.PublicK
 
 // GetAccountDataBorshInto decodes the borsh binary data and populates
 // the provided `inVar` parameter with all data associated with the account of provided publicKey.
-func (cl *Client) GetAccountDataBorshInto(ctx context.Context, account solana.PublicKey, inVar interface{}) (err error) {
-	resp, err := cl.GetAccountInfo(ctx, account)
+func (cl *Client) GetAccountDataBorshInto(account solana.PublicKey, inVar interface{}) (err error) {
+	resp, err := cl.GetAccountInfo(account)
 	if err != nil {
 		return err
 	}
@@ -87,7 +85,6 @@ type GetAccountInfoOpts struct {
 // You can specify the encoding of the returned data with the encoding parameter.
 // You can limit the returned account data with the offset and length parameters.
 func (cl *Client) GetAccountInfoWithOpts(
-	ctx context.Context,
 	account solana.PublicKey,
 	opts *GetAccountInfoOpts,
 ) (out *GetAccountInfoResult, err error) {
@@ -120,7 +117,7 @@ func (cl *Client) GetAccountInfoWithOpts(
 		params = append(params, obj)
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getAccountInfo", params)
+	err = cl.rpcClient.CallForInto(&out, "getAccountInfo", params)
 	if err != nil {
 		return nil, err
 	}

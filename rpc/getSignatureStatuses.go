@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetSignatureStatuses Returns the statuses of a list of signatures.
@@ -26,8 +24,6 @@ import (
 // of signatures, which retains statuses for all active slots plus
 // MAX_RECENT_BLOCKHASHES rooted slots.
 func (cl *Client) GetSignatureStatuses(
-	ctx context.Context,
-
 	// If true, a Solana node will search its ledger
 	// cache for any signatures not found in the recent status cache.
 	searchTransactionHistory bool,
@@ -39,7 +35,7 @@ func (cl *Client) GetSignatureStatuses(
 	if searchTransactionHistory {
 		params = append(params, M{"searchTransactionHistory": searchTransactionHistory})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getSignatureStatuses", params)
+	err = cl.rpcClient.CallForInto(&out, "getSignatureStatuses", params)
 	if err != nil {
 		return nil, err
 	}

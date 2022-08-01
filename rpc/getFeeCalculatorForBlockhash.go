@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetFeeCalculatorForBlockhash returns the fee calculator
@@ -25,7 +23,6 @@ import (
 //
 // NOTE: DEPRECATED
 func (cl *Client) GetFeeCalculatorForBlockhash(
-	ctx context.Context,
 	hash solana.Hash, // query blockhash
 	commitment CommitmentType, // optional
 ) (out *GetFeeCalculatorForBlockhashResult, err error) {
@@ -33,7 +30,7 @@ func (cl *Client) GetFeeCalculatorForBlockhash(
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getFeeCalculatorForBlockhash", params)
+	err = cl.rpcClient.CallForInto(&out, "getFeeCalculatorForBlockhash", params)
 	return
 }
 

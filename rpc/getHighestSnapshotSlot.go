@@ -14,18 +14,14 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // Returns the highest slot information that the node has snapshots for.
 // This will find the highest full snapshot slot, and the highest incremental
 // snapshot slot _based on_ the full snapshot slot, if there is one.
 //
 // **NEW: This method is only available in solana-core v1.9 or newer. Please use
 // `getSnapshotSlot` for solana-core v1.8**
-func (cl *Client) GetHighestSnapshotSlot(ctx context.Context) (out *GetHighestSnapshotSlotResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getHighestSnapshotSlot", nil)
+func (cl *Client) GetHighestSnapshotSlot() (out *GetHighestSnapshotSlotResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getHighestSnapshotSlot", nil)
 	return
 }
 

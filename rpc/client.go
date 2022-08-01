@@ -18,15 +18,13 @@
 package rpc
 
 import (
-	"context"
+	"crypto/tls"
 	"errors"
+	"github.com/valyala/fasthttp"
 	"io"
-	"net"
-	"net/http"
 	"time"
 
-	"github.com/gagliardetto/solana-go/rpc/jsonrpc"
-	"github.com/klauspost/compress/gzhttp"
+	"github.com/desperatee/solana-go/rpc/jsonrpc"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -38,8 +36,8 @@ type Client struct {
 }
 
 type JSONRPCClient interface {
-	CallForInto(ctx context.Context, out interface{}, method string, params []interface{}) error
-	CallWithCallback(ctx context.Context, method string, params []interface{}, callback func(*http.Request, *http.Response) error) error
+	CallForInto(out interface{}, method string, params []interface{}) error
+	CallWithCallback(method string, params []interface{}, callback func(*fasthttp.Request, *fasthttp.Response) error) error
 }
 
 // New creates a new Solana JSON RPC client.
@@ -89,45 +87,36 @@ var (
 	defaultKeepAlive           = 180 * time.Second
 )
 
-func newHTTPTransport() *http.Transport {
-	return &http.Transport{
-		IdleConnTimeout:     defaultTimeout,
-		MaxConnsPerHost:     defaultMaxIdleConnsPerHost,
-		MaxIdleConnsPerHost: defaultMaxIdleConnsPerHost,
-		Proxy:               http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   defaultTimeout,
-			KeepAlive: defaultKeepAlive,
-			DualStack: true,
-		}).DialContext,
-		ForceAttemptHTTP2: true,
-		// MaxIdleConns:          100,
-		TLSHandshakeTimeout: 10 * time.Second,
-		// ExpectContinueTimeout: 1 * time.Second,
-	}
-}
-
 // newHTTP returns a new Client from the provided config.
 // Client is safe for concurrent use by multiple goroutines.
-func newHTTP() *http.Client {
-	tr := newHTTPTransport()
-
-	return &http.Client{
-		Timeout:   defaultTimeout,
-		Transport: gzhttp.Transport(tr),
+func newHTTP() *fasthttp.Client {
+	return &fasthttp.Client{
+		ReadTimeout:                   time.Second,
+		WriteTimeout:                  time.Second,
+		MaxIdleConnDuration:           time.Hour,
+		MaxConnsPerHost:               1024,
+		DisableHeaderNamesNormalizing: true,
+		DisablePathNormalizing:        true,
+		Dial: (&fasthttp.TCPDialer{
+			Concurrency:      4096,
+			DNSCacheDuration: time.Hour,
+		}).DialDualStack,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			ClientSessionCache: tls.NewLRUClientSessionCache(0),
+		},
 	}
 }
 
 // RPCCallForInto allows to access the raw RPC client and send custom requests.
-func (cl *Client) RPCCallForInto(ctx context.Context, out interface{}, method string, params []interface{}) error {
-	return cl.rpcClient.CallForInto(ctx, out, method, params)
+func (cl *Client) RPCCallForInto(out interface{}, method string, params []interface{}) error {
+	return cl.rpcClient.CallForInto(out, method, params)
 }
 
 func (cl *Client) RPCCallWithCallback(
-	ctx context.Context,
 	method string,
 	params []interface{},
-	callback func(*http.Request, *http.Response) error,
+	callback func(*fasthttp.Request, *fasthttp.Response) error,
 ) error {
-	return cl.rpcClient.CallWithCallback(ctx, method, params, callback)
+	return cl.rpcClient.CallWithCallback(method, params, callback)
 }

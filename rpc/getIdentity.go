@@ -15,14 +15,12 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetIdentity returns the identity pubkey for the current node.
-func (cl *Client) GetIdentity(ctx context.Context) (out *GetIdentityResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getIdentity", nil)
+func (cl *Client) GetIdentity() (out *GetIdentityResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getIdentity", nil)
 	return
 }
 

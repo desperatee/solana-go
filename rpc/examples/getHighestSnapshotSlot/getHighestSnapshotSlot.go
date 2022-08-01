@@ -15,19 +15,15 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	example, err := client.GetHighestSnapshotSlot(
-		context.Background(),
-	)
+	example, err := client.GetHighestSnapshotSlot()
 	if err != nil {
 		panic(err)
 	}

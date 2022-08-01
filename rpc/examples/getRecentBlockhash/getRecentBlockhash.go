@@ -15,20 +15,20 @@
 package main
 
 import (
-	"context"
-
+	"fmt"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
+	"time"
 )
 
 func main() {
-	endpoint := rpc.TestNet_RPC
-	client := rpc.New(endpoint)
-
+	//endpoint := rpc.TestNet_RPC
+	client := rpc.New("https://de.pixelpilotz.com")
+	now := time.Now()
 	recent, err := client.GetRecentBlockhash(
-		context.TODO(),
 		rpc.CommitmentFinalized,
 	)
+	fmt.Println(time.Since(now))
 	if err != nil {
 		panic(err)
 	}

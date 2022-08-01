@@ -21,8 +21,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/desperatee/solana-go/text"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go/text"
 	"github.com/gagliardetto/treeout"
 )
 

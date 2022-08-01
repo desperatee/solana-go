@@ -15,10 +15,8 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -26,7 +24,6 @@ func main() {
 	client := rpc.New(endpoint)
 
 	example, err := client.GetRecentBlockhash(
-		context.TODO(),
 		rpc.CommitmentFinalized,
 	)
 	if err != nil {
@@ -35,7 +32,6 @@ func main() {
 
 	endSlot := uint64(example.Context.Slot)
 	out, err := client.GetBlocks(
-		context.TODO(),
 		uint64(example.Context.Slot-3),
 		&endSlot,
 		rpc.CommitmentFinalized,

@@ -18,10 +18,9 @@
 package rpc
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetConfirmedBlock returns identity and transaction information about a confirmed block in the ledger.
@@ -29,11 +28,9 @@ import (
 // DEPRECATED: Please use `getBlock` instead.
 // This method is expected to be removed in solana-core v1.8
 func (cl *Client) GetConfirmedBlock(
-	ctx context.Context,
 	slot uint64,
 ) (out *GetConfirmedBlockResult, err error) {
 	return cl.GetConfirmedBlockWithOpts(
-		ctx,
 		slot,
 		nil,
 	)
@@ -58,7 +55,6 @@ type GetConfirmedBlockOpts struct {
 // DEPRECATED: Please use `getBlock` instead.
 // This method is expected to be removed in solana-core v1.8
 func (cl *Client) GetConfirmedBlockWithOpts(
-	ctx context.Context,
 	slot uint64,
 	opts *GetConfirmedBlockOpts,
 ) (out *GetConfirmedBlockResult, err error) {
@@ -83,7 +79,7 @@ func (cl *Client) GetConfirmedBlockWithOpts(
 		}
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getConfirmedBlock", params)
+	err = cl.rpcClient.CallForInto(&out, "getConfirmedBlock", params)
 	return
 }
 
@@ -96,7 +92,6 @@ func (cl *Client) GetConfirmedBlockWithOpts(
 // DEPRECATED: Please use `getBlocks` instead.
 // This method is expected to be removed in solana-core v1.8
 func (cl *Client) GetConfirmedBlocks(
-	ctx context.Context,
 	startSlot uint64,
 	endSlot *uint64,
 	commitment CommitmentType,
@@ -110,7 +105,7 @@ func (cl *Client) GetConfirmedBlocks(
 		params = append(params, M{"commitment": string(commitment)})
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getConfirmedBlocks", params)
+	err = cl.rpcClient.CallForInto(&out, "getConfirmedBlocks", params)
 	return
 }
 
@@ -119,7 +114,6 @@ func (cl *Client) GetConfirmedBlocks(
 // DEPRECATED: Please use `getBlocksWithLimit` instead.
 // This method is expected to be removed in solana-core v1.8
 func (cl *Client) GetConfirmedBlocksWithLimit(
-	ctx context.Context,
 	startSlot uint64,
 	limit uint64,
 	commitment CommitmentType,
@@ -130,7 +124,7 @@ func (cl *Client) GetConfirmedBlocksWithLimit(
 		params = append(params, M{"commitment": string(commitment)})
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getConfirmedBlocksWithLimit", params)
+	err = cl.rpcClient.CallForInto(&out, "getConfirmedBlocksWithLimit", params)
 	return
 }
 
@@ -140,7 +134,6 @@ func (cl *Client) GetConfirmedBlocksWithLimit(
 // DEPRECATED: Please use getSignaturesForAddress instead.
 // This method is expected to be removed in solana-core v1.8
 func (cl *Client) GetConfirmedSignaturesForAddress2(
-	ctx context.Context,
 	address solana.PublicKey,
 	opts *GetConfirmedSignaturesForAddress2Opts,
 ) (out GetConfirmedSignaturesForAddress2Result, err error) {
@@ -166,18 +159,17 @@ func (cl *Client) GetConfirmedSignaturesForAddress2(
 		}
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getConfirmedSignaturesForAddress2", params)
+	err = cl.rpcClient.CallForInto(&out, "getConfirmedSignaturesForAddress2", params)
 	return
 }
 
 // GetConfirmedTransaction returns transaction details for a confirmed transaction.
 func (cl *Client) GetConfirmedTransaction(
-	ctx context.Context,
 	signature solana.Signature,
 ) (out *TransactionWithMeta, err error) {
 	params := []interface{}{signature, "json"}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getConfirmedTransaction", params)
+	err = cl.rpcClient.CallForInto(&out, "getConfirmedTransaction", params)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +181,6 @@ func (cl *Client) GetConfirmedTransaction(
 
 // GetConfirmedTransactionWithOpts returns transaction details for a confirmed transaction.
 func (cl *Client) GetConfirmedTransactionWithOpts(
-	ctx context.Context,
 	signature solana.Signature,
 	opts *GetTransactionOpts,
 ) (out *TransactionWithMeta, err error) {
@@ -217,7 +208,7 @@ func (cl *Client) GetConfirmedTransactionWithOpts(
 			params = append(params, obj)
 		}
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getConfirmedTransaction", params)
+	err = cl.rpcClient.CallForInto(&out, "getConfirmedTransaction", params)
 	if err != nil {
 		return nil, err
 	}

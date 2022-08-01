@@ -14,22 +14,17 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetRecentPerformanceSamples returns a list of recent performance samples,
 // in reverse slot order. Performance samples are taken every 60 seconds
 // and include the number of transactions and slots that occur in a given time window.
 func (cl *Client) GetRecentPerformanceSamples(
-	ctx context.Context,
 	limit *uint,
 ) (out []*GetRecentPerformanceSamplesResult, err error) {
 	params := []interface{}{}
 	if limit != nil {
 		params = append(params, limit)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getRecentPerformanceSamples", params)
+	err = cl.rpcClient.CallForInto(&out, "getRecentPerformanceSamples", params)
 	return
 }
 

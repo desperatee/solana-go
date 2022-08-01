@@ -14,20 +14,15 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetEpochInfo returns information about the current epoch.
 func (cl *Client) GetEpochInfo(
-	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetEpochInfoResult, err error) {
 	params := []interface{}{}
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getEpochInfo", params)
+	err = cl.rpcClient.CallForInto(&out, "getEpochInfo", params)
 	return
 }
 

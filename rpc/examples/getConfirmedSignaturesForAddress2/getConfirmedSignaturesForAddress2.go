@@ -15,11 +15,9 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -30,7 +28,6 @@ func main() {
 	{
 		// deprecated and is going to be removed in solana-core v1.8
 		out, err := client.GetConfirmedSignaturesForAddress2(
-			context.TODO(),
 			pubKey,
 			// TODO:
 			nil,

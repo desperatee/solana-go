@@ -15,11 +15,10 @@
 package rpc
 
 import (
-	"context"
 	"fmt"
 
+	"github.com/desperatee/solana-go"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
 )
 
 type GetTransactionOpts struct {
@@ -34,7 +33,6 @@ type GetTransactionOpts struct {
 // NEW: This method is only available in solana-core v1.7 or newer.
 // Please use `getConfirmedTransaction` for solana-core v1.6
 func (cl *Client) GetTransaction(
-	ctx context.Context,
 	txSig solana.Signature, // transaction signature
 	opts *GetTransactionOpts,
 ) (out *GetTransactionResult, err error) {
@@ -62,7 +60,7 @@ func (cl *Client) GetTransaction(
 			params = append(params, obj)
 		}
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTransaction", params)
+	err = cl.rpcClient.CallForInto(&out, "getTransaction", params)
 	if err != nil {
 		return nil, err
 	}

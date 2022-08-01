@@ -15,17 +15,12 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetLeaderSchedule returns the leader schedule for current epoch.
-func (cl *Client) GetLeaderSchedule(
-	ctx context.Context,
-) (out GetLeaderScheduleResult, err error) {
+func (cl *Client) GetLeaderSchedule() (out GetLeaderScheduleResult, err error) {
 	return cl.GetLeaderScheduleWithOpts(
-		ctx,
 		nil,
 	)
 }
@@ -44,7 +39,6 @@ type GetLeaderScheduleOpts struct {
 
 // GetLeaderScheduleWithOpts returns the leader schedule for an epoch.
 func (cl *Client) GetLeaderScheduleWithOpts(
-	ctx context.Context,
 	opts *GetLeaderScheduleOpts,
 ) (out GetLeaderScheduleResult, err error) {
 	params := []interface{}{}
@@ -63,7 +57,7 @@ func (cl *Client) GetLeaderScheduleWithOpts(
 			params = append(params, obj)
 		}
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getLeaderSchedule", params)
+	err = cl.rpcClient.CallForInto(&out, "getLeaderSchedule", params)
 	if err != nil {
 		return nil, err
 	}

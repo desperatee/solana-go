@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -135,7 +135,7 @@ func (inst *AdvanceNonceAccount) UnmarshalWithDecoder(decoder *ag_binary.Decoder
 
 // NewAdvanceNonceAccountInstruction declares a new AdvanceNonceAccount instruction with the provided parameters and accounts.
 func NewAdvanceNonceAccountInstruction(
-	// Accounts:
+// Accounts:
 	nonceAccount ag_solanago.PublicKey,
 	SysVarRecentBlockHashesPubkey ag_solanago.PublicKey,
 	nonceAuthorityAccount ag_solanago.PublicKey) *AdvanceNonceAccount {

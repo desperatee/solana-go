@@ -15,11 +15,9 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -27,7 +25,6 @@ func main() {
 	client := rpc.New(endpoint)
 
 	out, err := client.GetProgramAccounts(
-		context.TODO(),
 		solana.MustPublicKeyFromBase58("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
 	)
 	if err != nil {

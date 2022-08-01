@@ -15,15 +15,13 @@
 package rpc
 
 import (
-	"context"
 	"errors"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetTokenAccountsByOwner returns all SPL Token accounts by token owner.
 func (cl *Client) GetTokenAccountsByOwner(
-	ctx context.Context,
 	owner solana.PublicKey,
 	conf *GetTokenAccountsConfig,
 	opts *GetTokenAccountsOpts,
@@ -77,6 +75,6 @@ func (cl *Client) GetTokenAccountsByOwner(
 		}
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenAccountsByOwner", params)
+	err = cl.rpcClient.CallForInto(&out, "getTokenAccountsByOwner", params)
 	return
 }

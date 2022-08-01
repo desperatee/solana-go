@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type GetBlockProductionResult struct {
@@ -54,18 +52,14 @@ type SlotRangeRequest struct {
 }
 
 // GetBlockProduction returns recent block production information from the current or previous epoch.
-func (cl *Client) GetBlockProduction(
-	ctx context.Context,
-) (out *GetBlockProductionResult, err error) {
+func (cl *Client) GetBlockProduction() (out *GetBlockProductionResult, err error) {
 	return cl.GetBlockProductionWithOpts(
-		ctx,
 		nil,
 	)
 }
 
 // GetBlockProduction returns recent block production information from the current or previous epoch.
 func (cl *Client) GetBlockProductionWithOpts(
-	ctx context.Context,
 	opts *GetBlockProductionOpts,
 ) (out *GetBlockProductionResult, err error) {
 	params := []interface{}{}
@@ -90,7 +84,7 @@ func (cl *Client) GetBlockProductionWithOpts(
 			params = append(params, obj)
 		}
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getBlockProduction", params)
+	err = cl.rpcClient.CallForInto(&out, "getBlockProduction", params)
 
 	return
 }

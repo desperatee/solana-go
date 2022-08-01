@@ -15,8 +15,8 @@
 package ws
 
 import (
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 type SignatureResult struct {
@@ -32,7 +32,7 @@ type SignatureResult struct {
 // notification when the transaction is confirmed On signatureNotification,
 // the subscription is automatically cancelled
 func (cl *Client) SignatureSubscribe(
-	signature solana.Signature, // Transaction Signature.
+	signature solana.Signature,    // Transaction Signature.
 	commitment rpc.CommitmentType, // (optional)
 ) (*SignatureSubscription, error) {
 

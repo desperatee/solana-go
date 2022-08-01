@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type GetSignaturesForAddressOpts struct {
@@ -43,11 +41,9 @@ type GetSignaturesForAddressOpts struct {
 // NEW: This method is only available in solana-core v1.7 or newer.
 // Please use `getConfirmedSignaturesForAddress2` for solana-core v1.6
 func (cl *Client) GetSignaturesForAddress(
-	ctx context.Context,
 	account solana.PublicKey,
 ) (out []*TransactionSignature, err error) {
 	return cl.GetSignaturesForAddressWithOpts(
-		ctx,
 		account,
 		nil,
 	)
@@ -60,7 +56,6 @@ func (cl *Client) GetSignaturesForAddress(
 // NEW: This method is only available in solana-core v1.7 or newer.
 // Please use `getConfirmedSignaturesForAddress2` for solana-core v1.6
 func (cl *Client) GetSignaturesForAddressWithOpts(
-	ctx context.Context,
 	account solana.PublicKey,
 	opts *GetSignaturesForAddressOpts,
 ) (out []*TransactionSignature, err error) {
@@ -84,6 +79,6 @@ func (cl *Client) GetSignaturesForAddressWithOpts(
 		}
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getSignaturesForAddress", params)
+	err = cl.rpcClient.CallForInto(&out, "getSignaturesForAddress", params)
 	return
 }

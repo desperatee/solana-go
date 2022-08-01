@@ -21,8 +21,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/desperatee/solana-go/rpc"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 const MINT_SIZE = 82

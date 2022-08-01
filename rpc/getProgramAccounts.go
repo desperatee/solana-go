@@ -17,18 +17,14 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetProgramAccounts returns all accounts owned by the provided program publicKey.
 func (cl *Client) GetProgramAccounts(
-	ctx context.Context,
 	publicKey solana.PublicKey,
 ) (out GetProgramAccountsResult, err error) {
 	return cl.GetProgramAccountsWithOpts(
-		ctx,
 		publicKey,
 		nil,
 	)
@@ -36,7 +32,6 @@ func (cl *Client) GetProgramAccounts(
 
 // GetProgramAccountsWithOpts returns all accounts owned by the provided program publicKey.
 func (cl *Client) GetProgramAccountsWithOpts(
-	ctx context.Context,
 	publicKey solana.PublicKey,
 	opts *GetProgramAccountsOpts,
 ) (out GetProgramAccountsResult, err error) {
@@ -63,6 +58,6 @@ func (cl *Client) GetProgramAccountsWithOpts(
 
 	params := []interface{}{publicKey, obj}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getProgramAccounts", params)
+	err = cl.rpcClient.CallForInto(&out, "getProgramAccounts", params)
 	return
 }

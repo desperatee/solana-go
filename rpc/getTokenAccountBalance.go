@@ -15,14 +15,11 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetTokenAccountBalance returns the token balance of an SPL Token account.
 func (cl *Client) GetTokenAccountBalance(
-	ctx context.Context,
 	account solana.PublicKey,
 	commitment CommitmentType, // optional
 ) (out *GetTokenAccountBalanceResult, err error) {
@@ -32,7 +29,7 @@ func (cl *Client) GetTokenAccountBalance(
 			M{"commitment": commitment},
 		)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenAccountBalance", params)
+	err = cl.rpcClient.CallForInto(&out, "getTokenAccountBalance", params)
 	return
 }
 

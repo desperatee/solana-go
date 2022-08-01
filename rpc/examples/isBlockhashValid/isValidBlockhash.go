@@ -15,12 +15,11 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -29,7 +28,6 @@ func main() {
 
 	blockHash := solana.MustHashFromBase58("J7rBdM6AecPDEZp8aPq5iPSNKVkU5Q76F3oAV4eW5wsW")
 	out, err := client.IsBlockhashValid(
-		context.TODO(),
 		blockHash,
 		rpc.CommitmentFinalized,
 	)

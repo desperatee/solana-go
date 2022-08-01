@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -283,13 +283,13 @@ func (inst *CreateAccountWithSeed) UnmarshalWithDecoder(decoder *ag_binary.Decod
 
 // NewCreateAccountWithSeedInstruction declares a new CreateAccountWithSeed instruction with the provided parameters and accounts.
 func NewCreateAccountWithSeedInstruction(
-	// Parameters:
+// Parameters:
 	base ag_solanago.PublicKey,
 	seed string,
 	lamports uint64,
 	space uint64,
 	owner ag_solanago.PublicKey,
-	// Accounts:
+// Accounts:
 	fundingAccount ag_solanago.PublicKey,
 	createdAccount ag_solanago.PublicKey,
 	baseAccount ag_solanago.PublicKey) *CreateAccountWithSeed {

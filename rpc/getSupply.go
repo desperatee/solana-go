@@ -15,19 +15,16 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetSupply returns information about the current supply.
-func (cl *Client) GetSupply(ctx context.Context, commitment CommitmentType) (out *GetSupplyResult, err error) {
-	return cl.GetSupplyWithOpts(ctx, &GetSupplyOpts{Commitment: commitment})
+func (cl *Client) GetSupply(commitment CommitmentType) (out *GetSupplyResult, err error) {
+	return cl.GetSupplyWithOpts(&GetSupplyOpts{Commitment: commitment})
 }
 
 // GetSupply returns information about the current supply.
 func (cl *Client) GetSupplyWithOpts(
-	ctx context.Context,
 	opts *GetSupplyOpts,
 ) (out *GetSupplyResult, err error) {
 	obj := M{
@@ -40,7 +37,7 @@ func (cl *Client) GetSupplyWithOpts(
 		obj["excludeNonCirculatingAccountsList"] = opts.ExcludeNonCirculatingAccountsList
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getSupply", []interface{}{obj})
+	err = cl.rpcClient.CallForInto(&out, "getSupply", []interface{}{obj})
 	return
 }
 

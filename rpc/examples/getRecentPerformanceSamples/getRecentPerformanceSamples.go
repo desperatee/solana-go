@@ -15,10 +15,8 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -27,7 +25,6 @@ func main() {
 
 	limit := uint(3)
 	out, err := client.GetRecentPerformanceSamples(
-		context.TODO(),
 		&limit,
 	)
 	if err != nil {

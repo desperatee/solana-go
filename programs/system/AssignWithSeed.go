@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -207,11 +207,11 @@ func (inst *AssignWithSeed) UnmarshalWithDecoder(decoder *ag_binary.Decoder) err
 
 // NewAssignWithSeedInstruction declares a new AssignWithSeed instruction with the provided parameters and accounts.
 func NewAssignWithSeedInstruction(
-	// Parameters:
+// Parameters:
 	base ag_solanago.PublicKey,
 	seed string,
 	owner ag_solanago.PublicKey,
-	// Accounts:
+// Accounts:
 	assignedAccount ag_solanago.PublicKey,
 	baseAccount ag_solanago.PublicKey) *AssignWithSeed {
 	return NewAssignWithSeedInstructionBuilder().

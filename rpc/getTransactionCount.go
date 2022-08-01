@@ -14,13 +14,8 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetTransactionCount returns the current Transaction count from the ledger.
 func (cl *Client) GetTransactionCount(
-	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out uint64, err error) {
 	params := []interface{}{}
@@ -29,6 +24,6 @@ func (cl *Client) GetTransactionCount(
 			M{"commitment": commitment},
 		)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTransactionCount", params)
+	err = cl.rpcClient.CallForInto(&out, "getTransactionCount", params)
 	return
 }

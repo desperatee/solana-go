@@ -15,10 +15,9 @@
 package rpc
 
 import (
-	"context"
 	"errors"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type GetTokenAccountsConfig struct {
@@ -41,7 +40,6 @@ type GetTokenAccountsOpts struct {
 
 // GetTokenAccountsByDelegate returns all SPL Token accounts by approved Delegate.
 func (cl *Client) GetTokenAccountsByDelegate(
-	ctx context.Context,
 	account solana.PublicKey, // Pubkey of account delegate to query
 	conf *GetTokenAccountsConfig,
 	opts *GetTokenAccountsOpts,
@@ -95,7 +93,7 @@ func (cl *Client) GetTokenAccountsByDelegate(
 		}
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenAccountsByDelegate", params)
+	err = cl.rpcClient.CallForInto(&out, "getTokenAccountsByDelegate", params)
 	return
 }
 

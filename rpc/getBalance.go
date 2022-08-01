@@ -17,15 +17,11 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetBalance returns the balance of the account of provided publicKey.
 func (cl *Client) GetBalance(
-	ctx context.Context,
-
 	// Pubkey of account to query. Required.
 	publicKey solana.PublicKey,
 
@@ -37,6 +33,6 @@ func (cl *Client) GetBalance(
 		params = append(params, M{"commitment": string(commitment)})
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getBalance", params)
+	err = cl.rpcClient.CallForInto(&out, "getBalance", params)
 	return
 }

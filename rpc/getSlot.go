@@ -16,13 +16,8 @@
 // limitations under the License.
 package rpc
 
-import (
-	"context"
-)
-
 // GetSlot returns the slot that has reached the given or default commitment level.
 func (cl *Client) GetSlot(
-	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out uint64, err error) {
 	params := []interface{}{}
@@ -30,6 +25,6 @@ func (cl *Client) GetSlot(
 		params = append(params, M{"commitment": commitment})
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getSlot", params)
+	err = cl.rpcClient.CallForInto(&out, "getSlot", params)
 	return
 }

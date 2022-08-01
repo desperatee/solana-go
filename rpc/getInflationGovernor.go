@@ -14,13 +14,8 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetInflationGovernor returns the current inflation governor.
 func (cl *Client) GetInflationGovernor(
-	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetInflationGovernorResult, err error) {
 	params := []interface{}{}
@@ -29,7 +24,7 @@ func (cl *Client) GetInflationGovernor(
 			M{"commitment": commitment},
 		)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getInflationGovernor", params)
+	err = cl.rpcClient.CallForInto(&out, "getInflationGovernor", params)
 	return
 }
 

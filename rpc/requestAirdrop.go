@@ -17,15 +17,12 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // RequestAirdrop requests an airdrop of lamports to a publicKey.
 // Returns transaction signature of airdrop.
 func (cl *Client) RequestAirdrop(
-	ctx context.Context,
 	account solana.PublicKey,
 	lamports uint64,
 	commitment CommitmentType, // optional; used for retrieving blockhash and verifying airdrop success.
@@ -39,6 +36,6 @@ func (cl *Client) RequestAirdrop(
 			M{"commitment": commitment},
 		)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &signature, "requestAirdrop", params)
+	err = cl.rpcClient.CallForInto(&signature, "requestAirdrop", params)
 	return
 }

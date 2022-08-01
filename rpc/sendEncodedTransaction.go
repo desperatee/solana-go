@@ -17,15 +17,12 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // SendEncodedTransaction submits a signed base64 encoded transaction to the cluster for processing.
 // The only difference between this function and SignTransaction is that the latter takes a *solana.Transaction value, as the former takes a raw base64 string
 func (cl *Client) SendEncodedTransaction(
-	ctx context.Context,
 	encodedTx string,
 ) (signature solana.Signature, err error) {
 	opts := TransactionOpts{
@@ -34,7 +31,6 @@ func (cl *Client) SendEncodedTransaction(
 	}
 
 	return cl.SendEncodedTransactionWithOpts(
-		ctx,
 		encodedTx,
 		opts,
 	)
@@ -42,7 +38,6 @@ func (cl *Client) SendEncodedTransaction(
 
 // SendEncodedTransactionWithOpts submits a signed base64 encoded transaction to the cluster for processing.
 func (cl *Client) SendEncodedTransactionWithOpts(
-	ctx context.Context,
 	encodedTx string,
 	opts TransactionOpts,
 ) (signature solana.Signature, err error) {
@@ -52,6 +47,6 @@ func (cl *Client) SendEncodedTransactionWithOpts(
 		obj,
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &signature, "sendTransaction", params)
+	err = cl.rpcClient.CallForInto(&signature, "sendTransaction", params)
 	return
 }

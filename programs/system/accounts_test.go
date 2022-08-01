@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 	"github.com/stretchr/testify/assert"
 )
 

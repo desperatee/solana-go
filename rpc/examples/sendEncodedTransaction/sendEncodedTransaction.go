@@ -15,10 +15,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -26,7 +25,7 @@ func main() {
 	client := rpc.New(endpoint)
 	base64Tx := "AepZ357SXFu9tOBeX8v8aqkPNyGq/RUN4EvDzWAT/Fsg1htQu0Zp6F6OxO645I5z98VI4XacPKJp8rtHOE7Q9Q0BAAED8gJOoYf0IvSirfhOq6ZFf3R3ekB5vFWlaGTEq3irvwFakK+tD9il+9jzzs+gU1wzZxkmXZqyeBhbaXogNlk1GQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAou6RU2rKBCg2RzcJqZwEr4y2VBsWbkYLYMKFcOz64j4BAgIAAQwCAAAAAOH1BQAAAAA="
 
-	sig, err := client.SendEncodedTransaction(context.TODO(), base64Tx)
+	sig, err := client.SendEncodedTransaction(base64Tx)
 	if err != nil {
 		panic(err)
 	}

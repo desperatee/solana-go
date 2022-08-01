@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -235,10 +235,10 @@ func (obj *SetAuthority) UnmarshalWithDecoder(decoder *ag_binary.Decoder) (err e
 
 // NewSetAuthorityInstruction declares a new SetAuthority instruction with the provided parameters and accounts.
 func NewSetAuthorityInstruction(
-	// Parameters:
+// Parameters:
 	authority_type AuthorityType,
 	new_authority ag_solanago.PublicKey,
-	// Accounts:
+// Accounts:
 	subject ag_solanago.PublicKey,
 	authority ag_solanago.PublicKey,
 	multisigSigners []ag_solanago.PublicKey,

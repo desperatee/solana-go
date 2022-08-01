@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -214,9 +214,9 @@ func (obj *Approve) UnmarshalWithDecoder(decoder *ag_binary.Decoder) (err error)
 
 // NewApproveInstruction declares a new Approve instruction with the provided parameters and accounts.
 func NewApproveInstruction(
-	// Parameters:
+// Parameters:
 	amount uint64,
-	// Accounts:
+// Accounts:
 	source ag_solanago.PublicKey,
 	delegate ag_solanago.PublicKey,
 	owner ag_solanago.PublicKey,

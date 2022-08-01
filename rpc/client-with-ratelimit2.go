@@ -1,12 +1,10 @@
 package rpc
 
 import (
-	"context"
-	"io"
-	"net/http"
-
-	"github.com/gagliardetto/solana-go/rpc/jsonrpc"
+	"github.com/desperatee/solana-go/rpc/jsonrpc"
+	"github.com/valyala/fasthttp"
 	"golang.org/x/time/rate"
+	"io"
 )
 
 var _ JSONRPCClient = &clientWithLimiter{}
@@ -21,7 +19,7 @@ type clientWithLimiter struct {
 func NewWithLimiter(
 	rpcEndpoint string,
 	every rate.Limit, // time frame
-	b int, // number of requests per time frame
+	b int,            // number of requests per time frame
 ) JSONRPCClient {
 	opts := &jsonrpc.RPCClientOpts{
 		HTTPClient: newHTTP(),
@@ -36,25 +34,16 @@ func NewWithLimiter(
 	}
 }
 
-func (wr *clientWithLimiter) CallForInto(ctx context.Context, out interface{}, method string, params []interface{}) error {
-	err := wr.limiter.Wait(ctx)
-	if err != nil {
-		return err
-	}
-	return wr.rpcClient.CallForInto(ctx, &out, method, params)
+func (wr *clientWithLimiter) CallForInto(out interface{}, method string, params []interface{}) error {
+	return wr.rpcClient.CallForInto(&out, method, params)
 }
 
 func (wr *clientWithLimiter) CallWithCallback(
-	ctx context.Context,
 	method string,
 	params []interface{},
-	callback func(*http.Request, *http.Response) error,
+	callback func(*fasthttp.Request, *fasthttp.Response) error,
 ) error {
-	err := wr.limiter.Wait(ctx)
-	if err != nil {
-		return err
-	}
-	return wr.rpcClient.CallWithCallback(ctx, method, params, callback)
+	return wr.rpcClient.CallWithCallback(method, params, callback)
 }
 
 // Close closes clientWithLimiter.

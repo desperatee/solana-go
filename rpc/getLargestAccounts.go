@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type LargestAccountsFilterType string
@@ -30,7 +28,6 @@ const (
 // GetLargestAccounts returns the 20 largest accounts,
 // by lamport balance (results may be cached up to two hours).
 func (cl *Client) GetLargestAccounts(
-	ctx context.Context,
 	commitment CommitmentType,
 	filter LargestAccountsFilterType, // filter results by account type; currently supported: circulating|nonCirculating
 ) (out *GetLargestAccountsResult, err error) {
@@ -45,7 +42,7 @@ func (cl *Client) GetLargestAccounts(
 	if len(obj) > 0 {
 		params = append(params, obj)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getLargestAccounts", params)
+	err = cl.rpcClient.CallForInto(&out, "getLargestAccounts", params)
 	return
 }
 

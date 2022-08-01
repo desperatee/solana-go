@@ -14,13 +14,9 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetFeeRateGovernor returns the fee rate governor information from the root bank.
-func (cl *Client) GetFeeRateGovernor(ctx context.Context) (out *GetFeeRateGovernorResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getFeeRateGovernor", nil)
+func (cl *Client) GetFeeRateGovernor() (out *GetFeeRateGovernorResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getFeeRateGovernor", nil)
 	return
 }
 

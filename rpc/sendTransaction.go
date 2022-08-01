@@ -17,16 +17,14 @@
 package rpc
 
 import (
-	"context"
 	"encoding/base64"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // SendTransaction submits a signed transaction to the cluster for processing.
 func (cl *Client) SendTransaction(
-	ctx context.Context,
 	transaction *solana.Transaction,
 ) (signature solana.Signature, err error) {
 	opts := TransactionOpts{
@@ -35,7 +33,6 @@ func (cl *Client) SendTransaction(
 	}
 
 	return cl.SendTransactionWithOpts(
-		ctx,
 		transaction,
 		opts,
 	)
@@ -67,7 +64,6 @@ func (cl *Client) SendTransaction(
 // used to identify the transaction (transaction id). This identifier can be
 // easily extracted from the transaction data before submission.
 func (cl *Client) SendTransactionWithOpts(
-	ctx context.Context,
 	transaction *solana.Transaction,
 	opts TransactionOpts,
 ) (signature solana.Signature, err error) {
@@ -77,7 +73,6 @@ func (cl *Client) SendTransactionWithOpts(
 	}
 
 	return cl.SendEncodedTransactionWithOpts(
-		ctx,
 		base64.StdEncoding.EncodeToString(txData),
 		opts,
 	)

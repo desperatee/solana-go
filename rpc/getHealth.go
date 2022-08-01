@@ -14,10 +14,6 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetHealth returns the current health of the node.
 // If one or more --trusted-validator arguments are provided
 // to solana-validator, "ok" is returned when the node has within
@@ -28,8 +24,8 @@ import (
 // - If the node is healthy: "ok"
 // - If the node is unhealthy, a JSON RPC error response is returned.
 //   The specifics of the error response are UNSTABLE and may change in the future.
-func (cl *Client) GetHealth(ctx context.Context) (out string, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getHealth", nil)
+func (cl *Client) GetHealth() (out string, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getHealth", nil)
 	return
 }
 

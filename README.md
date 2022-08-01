@@ -1,10 +1,10 @@
 # Solana SDK library for Go
 
-[![GoDoc](https://pkg.go.dev/badge/github.com/gagliardetto/solana-go?status.svg)](https://pkg.go.dev/github.com/gagliardetto/solana-go@v1.5.0?tab=doc)
-[![GitHub tag (latest SemVer pre-release)](https://img.shields.io/github/v/tag/gagliardetto/solana-go?include_prereleases&label=release-tag)](https://github.com/gagliardetto/solana-go/releases)
-[![Build Status](https://github.com/gagliardetto/solana-go/workflows/tests/badge.svg?branch=main)](https://github.com/gagliardetto/solana-go/actions?query=branch%3Amain)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/gagliardetto/solana-go/main)](https://www.tickgit.com/browse?repo=github.com/gagliardetto/solana-go&branch=main)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gagliardetto/solana-go)](https://goreportcard.com/report/github.com/gagliardetto/solana-go)
+[![GoDoc](https://pkg.go.dev/badge/github.com/desperatee/solana-go?status.svg)](https://pkg.go.dev/github.com/desperatee/solana-go@v1.5.0?tab=doc)
+[![GitHub tag (latest SemVer pre-release)](https://img.shields.io/github/v/tag/gagliardetto/solana-go?include_prereleases&label=release-tag)](https://github.com/desperatee/solana-go/releases)
+[![Build Status](https://github.com/desperatee/solana-go/workflows/tests/badge.svg?branch=main)](https://github.com/desperatee/solana-go/actions?query=branch%3Amain)
+[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/desperatee/solana-go/main)](https://www.tickgit.com/browse?repo=github.com/desperatee/solana-go&branch=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/desperatee/solana-go)](https://goreportcard.com/report/github.com/desperatee/solana-go)
 
 Go library to interface with Solana JSON RPC and WebSocket interfaces.
 
@@ -12,7 +12,7 @@ More contracts to come.
 
 **If you're using/developing Solana programs written in [Anchor Framework](https://github.com/project-serum/anchor), you can use [anchor-go](https://github.com/gagliardetto/anchor-go) to generate Golang clients**
 
-**If you're looking for a SERUM library, you can check out [gagliardetto/serum-go](https://github.com/gagliardetto/serum-go) ([./programs/serum](https://github.com/gagliardetto/solana-go/tree/main/programs/serum) is deprecated.**)
+**If you're looking for a SERUM library, you can check out [gagliardetto/serum-go](https://github.com/gagliardetto/serum-go) ([./programs/serum](https://github.com/desperatee/solana-go/tree/main/programs/serum) is deprecated.**)
 
 <div align="center">
     <img src="https://user-images.githubusercontent.com/15271561/128235229-1d2d9116-23bb-464e-b2cc-8fb6355e3b55.png" margin="auto" height="175"/>
@@ -100,7 +100,7 @@ Note
 
 ```bash
 $ cd my-project
-$ go get github.com/gagliardetto/solana-go@v1.5.0
+$ go get github.com/desperatee/solana-go@v1.5.0
 ```
 
 ## Pretty-Print transactions/instructions
@@ -132,7 +132,7 @@ fmt.Println(tx.String())
 
 ## SendAndConfirmTransaction
 
-You can wait for a transaction confirmation using the `github.com/gagliardetto/solana-go/rpc/sendAndConfirmTransaction` package tools (for a complete example: [see here](#transfer-sol-from-one-wallet-to-another-wallet))
+You can wait for a transaction confirmation using the `github.com/desperatee/solana-go/rpc/sendAndConfirmTransaction` package tools (for a complete example: [see here](#transfer-sol-from-one-wallet-to-another-wallet))
 
 ```go
 // Send transaction, and wait for confirmation:
@@ -163,10 +163,10 @@ import (
 
   "github.com/davecgh/go-spew/spew"
   bin "github.com/gagliardetto/binary"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/programs/system"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/text"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/programs/system"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/text"
 )
 
 func main() {
@@ -354,7 +354,7 @@ import (
 
   "golang.org/x/time/rate"
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -385,7 +385,7 @@ import (
 
   "golang.org/x/time/rate"
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -434,8 +434,8 @@ import (
   "net/http"
   "time"
 
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/jsonrpc"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/jsonrpc"
 )
 
 func NewHTTPTransport(
@@ -502,8 +502,8 @@ import (
   "context"
   "fmt"
 
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -609,13 +609,13 @@ import (
   "time"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/programs/system"
-  "github.com/gagliardetto/solana-go/rpc"
-  confirm "github.com/gagliardetto/solana-go/rpc/sendAndConfirmTransaction"
-  "github.com/gagliardetto/solana-go/rpc/jsonrpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
-  "github.com/gagliardetto/solana-go/text"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/programs/system"
+  "github.com/desperatee/solana-go/rpc"
+  confirm "github.com/desperatee/solana-go/rpc/sendAndConfirmTransaction"
+  "github.com/desperatee/solana-go/rpc/jsonrpc"
+  "github.com/desperatee/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go/text"
 )
 
 func main() {
@@ -815,9 +815,9 @@ import (
 
   "github.com/davecgh/go-spew/spew"
   bin "github.com/gagliardetto/binary"
-  solana "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/programs/token"
-  "github.com/gagliardetto/solana-go/rpc"
+  solana "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/programs/token"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -921,8 +921,8 @@ import (
   "math/big"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -959,8 +959,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1013,7 +1013,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1045,7 +1045,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1072,7 +1072,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1115,7 +1115,7 @@ import (
   "time"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1151,7 +1151,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1189,7 +1189,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1227,7 +1227,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1254,8 +1254,8 @@ import (
 
   "github.com/AlekSi/pointer"
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1312,7 +1312,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1353,7 +1353,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1393,8 +1393,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1427,8 +1427,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1466,7 +1466,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1493,7 +1493,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1519,7 +1519,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1555,7 +1555,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1581,7 +1581,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1609,7 +1609,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1637,7 +1637,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1663,7 +1663,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1689,7 +1689,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1716,7 +1716,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1744,7 +1744,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1771,7 +1771,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1797,7 +1797,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1824,7 +1824,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1850,8 +1850,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1885,7 +1885,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1913,7 +1913,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1939,7 +1939,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1965,7 +1965,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -1991,7 +1991,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2020,8 +2020,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2072,8 +2072,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2101,7 +2101,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2128,7 +2128,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2156,8 +2156,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2187,8 +2187,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2215,7 +2215,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2242,7 +2242,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2269,7 +2269,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2305,7 +2305,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2331,8 +2331,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2362,7 +2362,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2389,8 +2389,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2419,8 +2419,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2453,9 +2453,9 @@ import (
 
   "github.com/davecgh/go-spew/spew"
   bin "github.com/gagliardetto/binary"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/programs/token"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/programs/token"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2506,8 +2506,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2536,8 +2536,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2566,8 +2566,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2619,7 +2619,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2646,7 +2646,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2672,8 +2672,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2702,8 +2702,8 @@ import (
   "context"
   "fmt"
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2735,7 +2735,7 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2761,8 +2761,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -2816,9 +2816,9 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {
@@ -2878,9 +2878,9 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {
@@ -2940,9 +2940,9 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {
@@ -2993,8 +2993,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {
@@ -3027,9 +3027,9 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {
@@ -3068,8 +3068,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {
@@ -3103,8 +3103,8 @@ import (
   "context"
 
   "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-  "github.com/gagliardetto/solana-go/rpc/ws"
+  "github.com/desperatee/solana-go/rpc"
+  "github.com/desperatee/solana-go/rpc/ws"
 )
 
 func main() {

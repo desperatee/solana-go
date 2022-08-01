@@ -17,9 +17,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // Returns the latest blockhash.
@@ -27,7 +25,6 @@ import (
 // **NEW: This method is only available in solana-core v1.9 or newer. Please use
 // `getRecentBlockhash` for solana-core v1.8**
 func (cl *Client) GetLatestBlockhash(
-	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetLatestBlockhashResult, err error) {
 	params := []interface{}{}
@@ -35,7 +32,7 @@ func (cl *Client) GetLatestBlockhash(
 		params = append(params, M{"commitment": commitment})
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "getLatestBlockhash", params)
+	err = cl.rpcClient.CallForInto(&out, "getLatestBlockhash", params)
 	return
 }
 

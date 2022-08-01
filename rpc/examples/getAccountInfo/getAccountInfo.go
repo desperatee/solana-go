@@ -15,13 +15,11 @@
 package main
 
 import (
-	"context"
-
 	"github.com/davecgh/go-spew/spew"
+	solana "github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/programs/token"
+	"github.com/desperatee/solana-go/rpc"
 	bin "github.com/gagliardetto/binary"
-	solana "github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/programs/token"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 func main() {
@@ -32,7 +30,6 @@ func main() {
 		pubKey := solana.MustPublicKeyFromBase58("SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt") // serum token
 		// basic usage
 		resp, err := client.GetAccountInfo(
-			context.TODO(),
 			pubKey,
 		)
 		if err != nil {
@@ -59,7 +56,6 @@ func main() {
 		var mint token.Mint
 		// Get the account, and decode its data into the provided mint object:
 		err := client.GetAccountDataInto(
-			context.TODO(),
 			pubKey,
 			&mint,
 		)
@@ -86,7 +82,6 @@ func main() {
 		pubKey := solana.MustPublicKeyFromBase58("4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R") // raydium token
 		// advanced usage
 		resp, err := client.GetAccountInfoWithOpts(
-			context.TODO(),
 			pubKey,
 			// You can specify more options here:
 			&rpc.GetAccountInfoOpts{

@@ -15,14 +15,12 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetClusterNodes returns information about all the nodes participating in the cluster.
-func (cl *Client) GetClusterNodes(ctx context.Context) (out []*GetClusterNodesResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getClusterNodes", nil)
+func (cl *Client) GetClusterNodes() (out []*GetClusterNodesResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getClusterNodes", nil)
 	return
 }
 

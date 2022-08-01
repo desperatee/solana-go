@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetFees returns a recent block hash from the ledger,
@@ -25,14 +23,13 @@ import (
 // of submitting a transaction using it, and the last
 // slot in which the blockhash will be valid.
 func (cl *Client) GetFees(
-	ctx context.Context,
 	commitment CommitmentType, // optional
 ) (out *GetFeesResult, err error) {
 	params := []interface{}{}
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getFees", params)
+	err = cl.rpcClient.CallForInto(&out, "getFees", params)
 	return
 }
 

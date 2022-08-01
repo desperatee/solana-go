@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -165,7 +165,7 @@ func (obj *Revoke) UnmarshalWithDecoder(decoder *ag_binary.Decoder) (err error) 
 
 // NewRevokeInstruction declares a new Revoke instruction with the provided parameters and accounts.
 func NewRevokeInstruction(
-	// Accounts:
+// Accounts:
 	source ag_solanago.PublicKey,
 	owner ag_solanago.PublicKey,
 	multisigSigners []ag_solanago.PublicKey,

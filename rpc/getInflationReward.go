@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type GetInflationRewardOpts struct {
@@ -30,8 +28,6 @@ type GetInflationRewardOpts struct {
 
 // GetInflationReward returns the inflation / staking reward for a list of addresses for an epoch.
 func (cl *Client) GetInflationReward(
-	ctx context.Context,
-
 	// An array of addresses to query.
 	addresses []solana.PublicKey,
 
@@ -52,7 +48,7 @@ func (cl *Client) GetInflationReward(
 		}
 	}
 	// TODO: check
-	err = cl.rpcClient.CallForInto(ctx, &out, "getInflationReward", params)
+	err = cl.rpcClient.CallForInto(&out, "getInflationReward", params)
 	return
 }
 

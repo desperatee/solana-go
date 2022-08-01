@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -176,9 +176,9 @@ func (obj *InitializeMultisig2) UnmarshalWithDecoder(decoder *ag_binary.Decoder)
 
 // NewInitializeMultisig2Instruction declares a new InitializeMultisig2 instruction with the provided parameters and accounts.
 func NewInitializeMultisig2Instruction(
-	// Parameters:
+// Parameters:
 	m uint8,
-	// Accounts:
+// Accounts:
 	account ag_solanago.PublicKey,
 	signers []ag_solanago.PublicKey,
 ) *InitializeMultisig2 {

@@ -15,14 +15,11 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetStakeActivation returns epoch activation information for a stake account.
 func (cl *Client) GetStakeActivation(
-	ctx context.Context,
 	// Pubkey of stake account to query
 	account solana.PublicKey,
 
@@ -45,7 +42,7 @@ func (cl *Client) GetStakeActivation(
 			params = append(params, obj)
 		}
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getStakeActivation", params)
+	err = cl.rpcClient.CallForInto(&out, "getStakeActivation", params)
 	return
 }
 

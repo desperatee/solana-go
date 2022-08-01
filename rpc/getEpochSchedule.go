@@ -14,13 +14,9 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetEpochSchedule returns epoch schedule information from this cluster's genesis config.
-func (cl *Client) GetEpochSchedule(ctx context.Context) (out *GetEpochScheduleResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getEpochSchedule", nil)
+func (cl *Client) GetEpochSchedule() (out *GetEpochScheduleResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getEpochSchedule", nil)
 	return
 }
 

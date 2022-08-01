@@ -17,11 +17,10 @@
 package rpc
 
 import (
-	"context"
 	"encoding/base64"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type SimulateTransactionResponse struct {
@@ -47,11 +46,9 @@ type SimulateTransactionResult struct {
 
 // SimulateTransaction simulates sending a transaction.
 func (cl *Client) SimulateTransaction(
-	ctx context.Context,
 	transaction *solana.Transaction,
 ) (out *SimulateTransactionResponse, err error) {
 	return cl.SimulateTransactionWithOpts(
-		ctx,
 		transaction,
 		nil,
 	)
@@ -89,7 +86,6 @@ type SimulateTransactionAccountsOpts struct {
 
 // SimulateTransaction simulates sending a transaction.
 func (cl *Client) SimulateTransactionWithOpts(
-	ctx context.Context,
 	transaction *solana.Transaction,
 	opts *SimulateTransactionOpts,
 ) (out *SimulateTransactionResponse, err error) {
@@ -125,6 +121,6 @@ func (cl *Client) SimulateTransactionWithOpts(
 		obj,
 	}
 
-	err = cl.rpcClient.CallForInto(ctx, &out, "simulateTransaction", params)
+	err = cl.rpcClient.CallForInto(&out, "simulateTransaction", params)
 	return
 }

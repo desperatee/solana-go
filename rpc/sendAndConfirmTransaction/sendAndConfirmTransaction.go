@@ -15,28 +15,25 @@
 package sendandconfirmtransaction
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
-	"github.com/gagliardetto/solana-go/rpc/ws"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
+	"github.com/desperatee/solana-go/rpc/ws"
 )
 
 // Send and wait for confirmation of a transaction.
 func SendAndConfirmTransaction(
-	ctx context.Context,
 	rpcClient *rpc.Client,
 	wsClient *ws.Client,
 	transaction *solana.Transaction,
 ) (signature solana.Signature, err error) {
 	opts := rpc.TransactionOpts{
-		SkipPreflight: false,
+		SkipPreflight:       false,
 		PreflightCommitment: rpc.CommitmentFinalized,
 	}
 
 	return SendAndConfirmTransactionWithOpts(
-		ctx,
 		rpcClient,
 		wsClient,
 		transaction,
@@ -46,7 +43,6 @@ func SendAndConfirmTransaction(
 
 // Send and wait for confirmation of a transaction.
 func SendAndConfirmTransactionWithOpts(
-	ctx context.Context,
 	rpcClient *rpc.Client,
 	wsClient *ws.Client,
 	transaction *solana.Transaction,
@@ -54,7 +50,6 @@ func SendAndConfirmTransactionWithOpts(
 ) (signature solana.Signature, err error) {
 
 	sig, err := rpcClient.SendTransactionWithOpts(
-		ctx,
 		transaction,
 		opts,
 	)

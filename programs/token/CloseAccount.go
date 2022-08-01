@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -186,7 +186,7 @@ func (obj *CloseAccount) UnmarshalWithDecoder(decoder *ag_binary.Decoder) (err e
 
 // NewCloseAccountInstruction declares a new CloseAccount instruction with the provided parameters and accounts.
 func NewCloseAccountInstruction(
-	// Accounts:
+// Accounts:
 	account ag_solanago.PublicKey,
 	destination ag_solanago.PublicKey,
 	owner ag_solanago.PublicKey,

@@ -15,13 +15,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"math/big"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/desperatee/solana-go"
+	"github.com/desperatee/solana-go/rpc"
 )
 
 func main() {
@@ -30,7 +29,6 @@ func main() {
 
 	pubKey := solana.MustPublicKeyFromBase58("7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932")
 	out, err := client.GetBalance(
-		context.TODO(),
 		pubKey,
 		rpc.CommitmentFinalized,
 	)

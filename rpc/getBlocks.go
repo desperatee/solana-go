@@ -14,16 +14,11 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetBlocks returns a list of confirmed blocks between two slots.
 // The result will be an array of u64 integers listing confirmed blocks
 // between start_slot and either end_slot, if provided, or latest
 // confirmed block, inclusive. Max range allowed is 500,000 slots.
 func (cl *Client) GetBlocks(
-	ctx context.Context,
 	startSlot uint64,
 	endSlot *uint64, // optional
 	commitment CommitmentType, // optional
@@ -38,7 +33,7 @@ func (cl *Client) GetBlocks(
 			M{"commitment": commitment},
 		)
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getBlocks", params)
+	err = cl.rpcClient.CallForInto(&out, "getBlocks", params)
 
 	return
 }

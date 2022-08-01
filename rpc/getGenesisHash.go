@@ -15,13 +15,11 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 // GetGenesisHash returns the genesis hash.
-func (cl *Client) GetGenesisHash(ctx context.Context) (out solana.Hash, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getGenesisHash", nil)
+func (cl *Client) GetGenesisHash() (out solana.Hash, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getGenesisHash", nil)
 	return
 }

@@ -14,13 +14,9 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetInflationRate returns the specific inflation values for the current epoch.
-func (cl *Client) GetInflationRate(ctx context.Context) (out *GetInflationRateResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getInflationRate", nil)
+func (cl *Client) GetInflationRate() (out *GetInflationRateResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getInflationRate", nil)
 	return
 }
 

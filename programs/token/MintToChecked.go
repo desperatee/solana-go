@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	ag_binary "github.com/gagliardetto/binary"
-	ag_solanago "github.com/gagliardetto/solana-go"
-	ag_format "github.com/gagliardetto/solana-go/text/format"
+	ag_solanago "github.com/desperatee/solana-go"
+	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
@@ -241,10 +241,10 @@ func (obj *MintToChecked) UnmarshalWithDecoder(decoder *ag_binary.Decoder) (err 
 
 // NewMintToCheckedInstruction declares a new MintToChecked instruction with the provided parameters and accounts.
 func NewMintToCheckedInstruction(
-	// Parameters:
+// Parameters:
 	amount uint64,
 	decimals uint8,
-	// Accounts:
+// Accounts:
 	mint ag_solanago.PublicKey,
 	destination ag_solanago.PublicKey,
 	authority ag_solanago.PublicKey,

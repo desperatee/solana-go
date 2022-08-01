@@ -15,9 +15,7 @@
 package rpc
 
 import (
-	"context"
-
-	"github.com/gagliardetto/solana-go"
+	"github.com/desperatee/solana-go"
 )
 
 type GetVoteAccountsOpts struct {
@@ -39,7 +37,6 @@ type GetVoteAccountsOpts struct {
 // GetVoteAccounts returns the account info and associated
 // stake for all the voting accounts in the current bank.
 func (cl *Client) GetVoteAccounts(
-	ctx context.Context,
 	opts *GetVoteAccountsOpts,
 ) (out *GetVoteAccountsResult, err error) {
 	params := []interface{}{}
@@ -61,7 +58,7 @@ func (cl *Client) GetVoteAccounts(
 			params = append(params, obj)
 		}
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getVoteAccounts", params)
+	err = cl.rpcClient.CallForInto(&out, "getVoteAccounts", params)
 	return
 }
 

@@ -14,16 +14,11 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // Get the fee the network will charge for a particular Message.
 //
 // **NEW**: This method is only available in solana-core v1.9 or newer. Please use
 // `getFees` for solana-core v1.8.
 func (cl *Client) GetFeeForMessage(
-	ctx context.Context,
 	message string, // Base-64 encoded Message
 	commitment CommitmentType, // optional
 ) (out *GetFeeForMessageResult, err error) {
@@ -31,7 +26,7 @@ func (cl *Client) GetFeeForMessage(
 	if commitment != "" {
 		params = append(params, M{"commitment": commitment})
 	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getFeeForMessage", params)
+	err = cl.rpcClient.CallForInto(&out, "getFeeForMessage", params)
 	return
 }
 

@@ -25,8 +25,8 @@ import (
 	"sort"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/desperatee/solana-go/text"
 	bin "github.com/gagliardetto/binary"
-	"github.com/gagliardetto/solana-go/text"
 	"github.com/gagliardetto/treeout"
 	"go.uber.org/zap"
 )
@@ -411,7 +411,7 @@ func (tx *Transaction) EncodeTree(encoder *text.TreeEncoder) (int, error) {
 }
 
 // String returns a human-readable string representation of the transaction data.
-// To disable colors, set "github.com/gagliardetto/solana-go/text".DisableColors = true
+// To disable colors, set "github.com/desperatee/solana-go/text".DisableColors = true
 func (tx *Transaction) String() string {
 	buf := new(bytes.Buffer)
 	_, err := tx.EncodeTree(text.NewTreeEncoder(buf, ""))

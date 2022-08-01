@@ -14,13 +14,9 @@
 
 package rpc
 
-import (
-	"context"
-)
-
 // GetVersion returns the current solana versions running on the node.
-func (cl *Client) GetVersion(ctx context.Context) (out *GetVersionResult, err error) {
-	err = cl.rpcClient.CallForInto(ctx, &out, "getVersion", nil)
+func (cl *Client) GetVersion() (out *GetVersionResult, err error) {
+	err = cl.rpcClient.CallForInto(&out, "getVersion", nil)
 	return
 }
 
