@@ -22,6 +22,7 @@ import (
 	"errors"
 	"github.com/valyala/fasthttp"
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/desperatee/solana-go/rpc/jsonrpc"
@@ -42,24 +43,32 @@ type JSONRPCClient interface {
 
 // New creates a new Solana JSON RPC client.
 // Client is safe for concurrent use by multiple goroutines.
-func New(rpcEndpoint string) *Client {
+func New(rpcEndpoint string) (*Client, error) {
+	client, err := newHTTP(rpcEndpoint)
+	if err != nil {
+		return nil, nil
+	}
 	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient: newHTTP(),
+		HTTPClient: client,
 	}
 
 	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
-	return NewWithCustomRPCClient(rpcClient)
+	return NewWithCustomRPCClient(rpcClient), nil
 }
 
 // New creates a new Solana JSON RPC client with the provided custom headers.
 // The provided headers will be added to each RPC request sent via this RPC client.
-func NewWithHeaders(rpcEndpoint string, headers map[string]string) *Client {
+func NewWithHeaders(rpcEndpoint string, headers map[string]string) (*Client, error) {
+	client, err := newHTTP(rpcEndpoint)
+	if err != nil {
+		return nil, nil
+	}
 	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient:    newHTTP(),
+		HTTPClient:    client,
 		CustomHeaders: headers,
 	}
 	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
-	return NewWithCustomRPCClient(rpcClient)
+	return NewWithCustomRPCClient(rpcClient), nil
 }
 
 // Close closes the client.
@@ -81,31 +90,53 @@ func NewWithCustomRPCClient(rpcClient JSONRPCClient) *Client {
 	}
 }
 
-var (
-	defaultMaxIdleConnsPerHost = 9
-	defaultTimeout             = 5 * time.Minute
-	defaultKeepAlive           = 180 * time.Second
-)
+//var (
+//	defaultMaxIdleConnsPerHost = 9
+//	defaultTimeout             = 5 * time.Minute
+//	defaultKeepAlive           = 180 * time.Second
+//)
 
 // newHTTP returns a new Client from the provided config.
 // Client is safe for concurrent use by multiple goroutines.
-func newHTTP() *fasthttp.Client {
-	return &fasthttp.Client{
+func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
+	parsedEndpoint, err := url.Parse(rpcEndpoint)
+	if err != nil {
+		return nil, nil
+	}
+	client := &fasthttp.HostClient{
 		ReadTimeout:                   time.Second,
 		WriteTimeout:                  time.Second,
 		MaxIdleConnDuration:           time.Hour,
-		MaxConnsPerHost:               10000,
+		MaxConns:                      100000,
 		DisableHeaderNamesNormalizing: true,
 		DisablePathNormalizing:        true,
 		Dial: (&fasthttp.TCPDialer{
-			Concurrency:      10000,
+			Concurrency:      0,
 			DNSCacheDuration: time.Hour,
-		}).DialDualStack,
+		}).Dial,
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: true,
 			ClientSessionCache: tls.NewLRUClientSessionCache(0),
+			ServerName:         parsedEndpoint.Hostname(),
 		},
 	}
+	if parsedEndpoint.Scheme == "https" {
+		client.IsTLS = true
+		if parsedEndpoint.Port() == "" {
+			client.Addr = parsedEndpoint.Host + ":443"
+		} else {
+			client.Addr = parsedEndpoint.Host
+		}
+	}
+	if parsedEndpoint.Scheme == "http" {
+		client.IsTLS = false
+		if parsedEndpoint.Port() == "" {
+			client.Addr = parsedEndpoint.Host + ":80"
+		} else {
+			client.Addr = parsedEndpoint.Host
+		}
+	}
+	return client, nil
 }
 
 // RPCCallForInto allows to access the raw RPC client and send custom requests.

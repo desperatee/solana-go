@@ -448,7 +448,6 @@ func (client *rpcClient) CallBatchRaw(requests RPCRequests) (RPCResponses, error
 }
 
 func (client *rpcClient) newRequest(req interface{}) (*fasthttp.Request, error) {
-
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -477,6 +476,10 @@ func (client *rpcClient) doCall(
 	err := client.doCallWithCallbackOnHTTPResponse(
 		RPCRequest,
 		func(httpRequest *fasthttp.Request, httpResponse *fasthttp.Response) error {
+			defer func() {
+				fasthttp.ReleaseRequest(httpRequest)
+				fasthttp.ReleaseResponse(httpResponse)
+			}()
 			decoder := json.NewDecoder(bytes.NewReader(httpResponse.Body()))
 			decoder.DisallowUnknownFields()
 			decoder.UseNumber()
@@ -531,7 +534,6 @@ func (client *rpcClient) doCallWithCallbackOnHTTPResponse(
 	if err != nil {
 		return fmt.Errorf("rpc call %v() on %v: %w", RPCRequest.Method, string(httpRequest.RequestURI()), err)
 	}
-	fasthttp.ReleaseRequest(httpRequest)
 	return callback(httpRequest, response)
 }
 
@@ -548,7 +550,10 @@ func (client *rpcClient) doBatchCall(rpcRequest []*RPCRequest) ([]*RPCResponse, 
 	if err != nil {
 		return nil, fmt.Errorf("rpc batch call on %v: %w", string(httpRequest.RequestURI()), err)
 	}
-	defer fasthttp.ReleaseRequest(httpRequest)
+	defer func() {
+		fasthttp.ReleaseRequest(httpRequest)
+		fasthttp.ReleaseResponse(response)
+	}()
 
 	var rpcResponse RPCResponses
 	decoder := json.NewDecoder(bytes.NewReader(response.Body()))

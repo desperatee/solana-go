@@ -19,10 +19,14 @@ type clientWithLimiter struct {
 func NewWithLimiter(
 	rpcEndpoint string,
 	every rate.Limit, // time frame
-	b int,            // number of requests per time frame
-) JSONRPCClient {
+	b int, // number of requests per time frame
+) (JSONRPCClient, error) {
+	client, err := newHTTP(rpcEndpoint)
+	if err != nil {
+		return nil, nil
+	}
 	opts := &jsonrpc.RPCClientOpts{
-		HTTPClient: newHTTP(),
+		HTTPClient: client,
 	}
 
 	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
@@ -31,7 +35,7 @@ func NewWithLimiter(
 	return &clientWithLimiter{
 		rpcClient: rpcClient,
 		limiter:   rater,
-	}
+	}, nil
 }
 
 func (wr *clientWithLimiter) CallForInto(out interface{}, method string, params []interface{}) error {
