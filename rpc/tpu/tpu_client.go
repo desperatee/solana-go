@@ -274,12 +274,28 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 	var lastError = ""
 	leaderTPUSockets := tpuClient.LTPUService.LeaderTPUSockets(tpuClient.FanoutSlots)
 	for _, leader := range leaderTPUSockets {
-		connection, err := net.Dial("udp4", leader)
-		if err != nil {
-			lastError = err.Error()
+		var connectionTries = 0
+		var failed = false
+		var connection net.Conn
+		for {
+			conn, err := net.Dial("udp4", leader)
+			if err != nil {
+				lastError = err.Error()
+				if connectionTries < 3 {
+					connectionTries++
+					continue
+				} else {
+					failed = true
+					break
+				}
+			}
+			connection = conn
+		}
+		if failed == true {
+			continue
 		}
 		for i := 0; i < amount; i++ {
-			_, err = connection.Write(transaction)
+			_, err := connection.Write(transaction)
 			if err != nil {
 				lastError = err.Error()
 			} else {
