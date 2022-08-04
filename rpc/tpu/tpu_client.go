@@ -290,6 +290,7 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 				}
 			}
 			connection = conn
+			break
 		}
 		if failed == true {
 			continue
