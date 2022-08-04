@@ -104,10 +104,10 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		return nil, nil
 	}
 	client := &fasthttp.HostClient{
-		ReadTimeout:                   time.Second,
-		WriteTimeout:                  time.Second,
+		ReadTimeout:                   3 * time.Second,
+		WriteTimeout:                  3 * time.Second,
 		MaxIdleConnDuration:           time.Hour,
-		MaxConns:                      100000,
+		MaxConns:                      16777216,
 		DisableHeaderNamesNormalizing: true,
 		DisablePathNormalizing:        true,
 		Dial: (&fasthttp.TCPDialer{
