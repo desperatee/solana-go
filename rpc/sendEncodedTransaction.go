@@ -48,5 +48,8 @@ func (cl *Client) SendEncodedTransactionWithOpts(
 	}
 
 	err = cl.rpcClient.CallForInto(&signature, "sendTransaction", params)
+	if err != nil {
+		return solana.Signature{}, err
+	}
 	return
 }

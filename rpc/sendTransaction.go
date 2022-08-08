@@ -19,7 +19,6 @@ package rpc
 import (
 	"encoding/base64"
 	"fmt"
-
 	"github.com/desperatee/solana-go"
 )
 
