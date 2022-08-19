@@ -3,6 +3,7 @@
 package compute_budget
 
 import (
+	"encoding/binary"
 	"errors"
 	ag_solanago "github.com/desperatee/solana-go"
 	ag_format "github.com/desperatee/solana-go/text/format"
@@ -41,7 +42,7 @@ func (inst *RequestUnits) SetAdditionalFee(additionalFee uint32) *RequestUnits {
 func (inst RequestUnits) Build() *Instruction {
 	return &Instruction{BaseVariant: ag_binary.BaseVariant{
 		Impl:   inst,
-		TypeID: Instruction_RequestUnits,
+		TypeID: ag_binary.TypeIDFromUint32(Instruction_RequestUnits, binary.LittleEndian),
 	}}
 }
 

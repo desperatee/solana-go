@@ -12,7 +12,7 @@ import (
 	ag_treeout "github.com/gagliardetto/treeout"
 )
 
-var ProgramID ag_solanago.PublicKey
+var ProgramID ag_solanago.PublicKey = ag_solanago.MustPublicKeyFromBase58("ComputeBudget111111111111111111111111111111")
 
 func SetProgramID(pubkey ag_solanago.PublicKey) {
 	ProgramID = pubkey
@@ -28,11 +28,11 @@ func init() {
 }
 
 var (
-	Instruction_RequestUnits = ag_binary.TypeID([8]byte{76, 78, 92, 10, 63, 127, 177, 141})
+	Instruction_RequestUnits uint32 = 0
 )
 
 // InstructionIDToName returns the name of the instruction given its ID.
-func InstructionIDToName(id ag_binary.TypeID) string {
+func InstructionIDToName(id uint32) string {
 	switch id {
 	case Instruction_RequestUnits:
 		return "RequestUnits"
