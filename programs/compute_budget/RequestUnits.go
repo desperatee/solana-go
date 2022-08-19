@@ -26,9 +26,9 @@ import (
 // RequestUnits
 type RequestUnits struct {
 	// Number of lamports to transfer to the new account
-	Units *uint64
+	Units *uint32
 	// Number of lamports to transfer to the new account
-	AdditionalFee                *uint64
+	AdditionalFee                *uint32
 	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
 
@@ -41,13 +41,13 @@ func NewTransferInstructionBuilder() *RequestUnits {
 }
 
 // Number of requested compute units
-func (inst *RequestUnits) SetUnits(units uint64) *RequestUnits {
+func (inst *RequestUnits) SetUnits(units uint32) *RequestUnits {
 	inst.Units = &units
 	return inst
 }
 
 // Additional fee in lamports
-func (inst *RequestUnits) SetAdditionalFee(additionalFee uint64) *RequestUnits {
+func (inst *RequestUnits) SetAdditionalFee(additionalFee uint32) *RequestUnits {
 	inst.AdditionalFee = &additionalFee
 	return inst
 }
@@ -138,8 +138,8 @@ func (inst *RequestUnits) UnmarshalWithDecoder(decoder *ag_binary.Decoder) error
 // NewRequestUnitsInstruction declares a new RequestUnits instruction with the provided parameters and accounts.
 func NewRequestUnitsInstruction(
 	// Parameters:
-	requestedComputeUnits uint64,
-	additionalFee uint64) *RequestUnits {
+	requestedComputeUnits uint32,
+	additionalFee uint32) *RequestUnits {
 	return NewTransferInstructionBuilder().
 		SetUnits(requestedComputeUnits).
 		SetAdditionalFee(additionalFee)
