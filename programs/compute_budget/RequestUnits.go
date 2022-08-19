@@ -5,7 +5,6 @@ package compute_budget
 import (
 	"encoding/binary"
 	"errors"
-	ag_solanago "github.com/desperatee/solana-go"
 	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_binary "github.com/gagliardetto/binary"
 	ag_treeout "github.com/gagliardetto/treeout"
@@ -15,15 +14,11 @@ import (
 type RequestUnits struct {
 	Units         *uint32
 	AdditionalFee *uint32
-
-	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
 
 // NewRequestUnitsInstructionBuilder creates a new `RequestUnits` instruction builder.
 func NewRequestUnitsInstructionBuilder() *RequestUnits {
-	nd := &RequestUnits{
-		AccountMetaSlice: make(ag_solanago.AccountMetaSlice, 0),
-	}
+	nd := &RequestUnits{}
 	return nd
 }
 
@@ -86,9 +81,6 @@ func (inst *RequestUnits) EncodeToTree(parent ag_treeout.Branches) {
 						paramsBranch.Child(ag_format.Param("        Units", *inst.Units))
 						paramsBranch.Child(ag_format.Param("AdditionalFee", *inst.AdditionalFee))
 					})
-
-					// Accounts of the instruction:
-					instructionBranch.Child("Accounts[len=0]").ParentFunc(func(accountsBranch ag_treeout.Branches) {})
 				})
 		})
 }

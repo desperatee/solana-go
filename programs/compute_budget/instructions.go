@@ -67,7 +67,7 @@ func (inst *Instruction) ProgramID() ag_solanago.PublicKey {
 }
 
 func (inst *Instruction) Accounts() (out []*ag_solanago.AccountMeta) {
-	return inst.Impl.(ag_solanago.AccountsGettable).GetAccounts()
+	return []*ag_solanago.AccountMeta{}
 }
 
 func (inst *Instruction) Data() ([]byte, error) {
@@ -106,12 +106,6 @@ func DecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (*Instr
 	inst := new(Instruction)
 	if err := ag_binary.NewBorshDecoder(data).Decode(inst); err != nil {
 		return nil, fmt.Errorf("unable to decode instruction: %w", err)
-	}
-	if v, ok := inst.Impl.(ag_solanago.AccountsSettable); ok {
-		err := v.SetAccounts(accounts)
-		if err != nil {
-			return nil, fmt.Errorf("unable to set accounts for instruction: %w", err)
-		}
 	}
 	return inst, nil
 }
