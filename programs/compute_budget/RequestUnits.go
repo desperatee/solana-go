@@ -17,6 +17,7 @@ package compute_budget
 import (
 	"encoding/binary"
 	"errors"
+	ag_solanago "github.com/desperatee/solana-go"
 	ag_format "github.com/desperatee/solana-go/text/format"
 	ag_binary "github.com/gagliardetto/binary"
 	ag_treeout "github.com/gagliardetto/treeout"
@@ -27,7 +28,8 @@ type RequestUnits struct {
 	// Number of lamports to transfer to the new account
 	Units *uint32
 	// Number of lamports to transfer to the new account
-	AdditionalFee *uint32
+	AdditionalFee                *uint32
+	ag_solanago.AccountMetaSlice `bin:"-" borsh_skip:"true"`
 }
 
 // NewTransferInstructionBuilder creates a new `Transfer` instruction builder.
