@@ -6,7 +6,6 @@ import (
 	"github.com/desperatee/solana-go"
 	"github.com/desperatee/solana-go/rpc"
 	"github.com/desperatee/solana-go/rpc/ws"
-	"github.com/libp2p/go-reuseport"
 	"math"
 	"net"
 	"sort"
@@ -279,7 +278,7 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 		var failed = false
 		var connection net.Conn
 		for {
-			conn, err := reuseport.Dial("udp4", "127.0.0.1:9431", leader)
+			conn, err := net.Dial("udp4", leader)
 			if err != nil {
 				lastError = err.Error()
 				if connectionTries < 3 {
