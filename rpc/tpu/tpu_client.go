@@ -138,14 +138,15 @@ func (recentLeaderSlots *RecentLeaderSlots) EstimatedCurrentSlot() (uint64, erro
 }
 
 type LeaderTPUService struct {
-	RecentSlots  RecentLeaderSlots
-	LTPUCache    LeaderTPUCache
-	Subscription *ws.SlotsUpdatesSubscription
-	Connection   *rpc.Client
-	WSConnection *ws.Client
+	RecentSlots       RecentLeaderSlots
+	LTPUCache         LeaderTPUCache
+	Subscription      *ws.SlotsUpdatesSubscription
+	Connection        *rpc.Client
+	WSConnection      *ws.Client
+	LeaderConnections []net.Conn
 }
 
-func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocketURL string) error {
+func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocketURL string, fanout uint64) error {
 	leaderTPUService.Connection = connection
 	slot, err := leaderTPUService.Connection.GetSlot(rpc.CommitmentProcessed)
 	if err != nil {
@@ -190,15 +191,39 @@ func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocket
 	} else {
 		leaderTPUService.Connection = nil
 	}
-	go leaderTPUService.Run()
+	go leaderTPUService.Run(fanout)
 	return nil
 }
 
 func (leaderTPUService *LeaderTPUService) LeaderTPUSockets(fanoutSlots uint64) []string {
 	return leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
 }
+func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots uint64) []string {
+	sockets := leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
+	var conns []net.Conn
+	for _, socket := range sockets {
+		connectionTries := 0
+		var connection net.Conn
+		for {
+			conn, err := net.Dial("udp4", socket)
+			if err != nil {
+				if connectionTries < 3 {
+					connectionTries++
+					continue
+				} else {
+					break
+				}
+			}
+			connection = conn
+			break
+		}
+		conns = append(conns, connection)
+	}
+	leaderTPUService.LeaderConnections = conns
+	return sockets
+}
 
-func (leaderTPUService *LeaderTPUService) Run() {
+func (leaderTPUService *LeaderTPUService) Run(fanout uint64) {
 	for {
 		lastClusterRefreshTime := time.Now()
 		sleepDelay := time.Duration(1000) * time.Millisecond
@@ -209,6 +234,7 @@ func (leaderTPUService *LeaderTPUService) Run() {
 				continue
 			}
 			leaderTPUService.LTPUCache.LeaderTPUMap = latestTPUSockets
+			leaderTPUService.LeaderTPUSocketsWithConn(fanout)
 		}
 		estimatedCurrentSlot, err := leaderTPUService.RecentSlots.EstimatedCurrentSlot()
 		if err != nil {
@@ -249,11 +275,12 @@ func (tpuClient *TPUClient) Load(connection *rpc.Client, websocketURL string, co
 	tpuClient.FanoutSlots = uint64(math.Max(math.Min(float64(config.FanoutSlots), float64(MAX_FANOUT_SLOTS)), 1))
 	tpuClient.Exit = false
 	leaderTPUService := LeaderTPUService{}
-	err := leaderTPUService.Load(tpuClient.Connection, websocketURL)
+	err := leaderTPUService.Load(tpuClient.Connection, websocketURL, config.FanoutSlots)
 	if err != nil {
 		return err
 	}
 	tpuClient.LTPUService = leaderTPUService
+	tpuClient.LTPUService.LeaderTPUSocketsWithConn(config.FanoutSlots)
 	return nil
 }
 
@@ -263,6 +290,18 @@ func (tpuClient *TPUClient) SendTransaction(transaction *solana.Transaction, amo
 		return solana.Signature{}, err
 	}
 	err = tpuClient.SendRawTransaction(rawTransaction, amount)
+	if err != nil {
+		return solana.Signature{}, err
+	}
+	return transaction.Signatures[0], nil
+}
+
+func (tpuClient *TPUClient) SendTransactionSameConn(transaction *solana.Transaction, amount int) (solana.Signature, error) {
+	rawTransaction, err := transaction.MarshalBinary()
+	if err != nil {
+		return solana.Signature{}, err
+	}
+	err = tpuClient.SendRawTransactionSameConn(rawTransaction, amount)
 	if err != nil {
 		return solana.Signature{}, err
 	}
@@ -304,6 +343,26 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 			}
 		}
 		connection.Close()
+	}
+	if successes == 0 {
+		return errors.New(lastError)
+	} else {
+		return nil
+	}
+}
+
+func (tpuClient *TPUClient) SendRawTransactionSameConn(transaction []byte, amount int) error {
+	var successes = 0
+	var lastError = ""
+	for _, leader := range tpuClient.LTPUService.LeaderConnections {
+		for i := 0; i < amount; i++ {
+			_, err := leader.Write(transaction)
+			if err != nil {
+				lastError = err.Error()
+			} else {
+				successes++
+			}
+		}
 	}
 	if successes == 0 {
 		return errors.New(lastError)
