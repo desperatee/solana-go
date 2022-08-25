@@ -25,14 +25,14 @@ type LeaderTPUCache struct {
 	Leaders           []solana.PublicKey
 }
 
-func (leaderTPUCache *LeaderTPUCache) Load(connection *rpc.Client, startSlot uint64) error {
+func (leaderTPUCache *LeaderTPUCache) Load(connection *rpc.Client, startSlot uint64, fanout uint64) error {
 	leaderTPUCache.Connection = connection
 	epochInfo, err := leaderTPUCache.Connection.GetEpochInfo(rpc.CommitmentProcessed)
 	if err != nil {
 		return err
 	}
 	leaderTPUCache.SlotsInEpoch = epochInfo.SlotsInEpoch
-	slotLeaders, err := leaderTPUCache.FetchSlotLeaders(startSlot, leaderTPUCache.SlotsInEpoch)
+	slotLeaders, err := leaderTPUCache.FetchSlotLeaders(startSlot, fanout, leaderTPUCache.SlotsInEpoch)
 	if err != nil {
 		return err
 	}
@@ -45,8 +45,8 @@ func (leaderTPUCache *LeaderTPUCache) Load(connection *rpc.Client, startSlot uin
 	return nil
 }
 
-func (leaderTPUCache *LeaderTPUCache) FetchSlotLeaders(startSlot uint64, slotsInEpoch uint64) ([]solana.PublicKey, error) {
-	fanout := uint64(math.Min(float64(2*MAX_FANOUT_SLOTS), float64(slotsInEpoch)))
+func (leaderTPUCache *LeaderTPUCache) FetchSlotLeaders(startSlot uint64, fanoutSlots uint64, slotsInEpoch uint64) ([]solana.PublicKey, error) {
+	fanout := uint64(math.Min(float64(2*fanoutSlots), float64(slotsInEpoch)))
 	slotLeaders, err := leaderTPUCache.Connection.GetSlotLeaders(startSlot, fanout)
 	if err != nil {
 		return nil, err
@@ -109,9 +109,9 @@ func (recentLeaderSlots *RecentLeaderSlots) Load(currentSlot uint64) {
 	recentLeaderSlots.RecentSlots = append(recentLeaderSlots.RecentSlots, float64(currentSlot))
 }
 
-func (recentLeaderSlots *RecentLeaderSlots) RecordSlot(currentSlot uint64) {
+func (recentLeaderSlots *RecentLeaderSlots) RecordSlot(currentSlot uint64, fanout uint64) {
 	recentLeaderSlots.RecentSlots = append(recentLeaderSlots.RecentSlots, float64(currentSlot))
-	for len(recentLeaderSlots.RecentSlots) > int(DEFAULT_FANOUT_SLOTS) {
+	for len(recentLeaderSlots.RecentSlots) > int(fanout) {
 		recentLeaderSlots.RecentSlots = recentLeaderSlots.RecentSlots[1:]
 	}
 }
@@ -127,19 +127,19 @@ func (recentLeaderSlots *RecentLeaderSlots) EstimatedCurrentSlot() (uint64, erro
 	medianRecentSlot := recentSlots[medianIndex]
 	expectedCurrentSlot := uint64(medianRecentSlot) + uint64(maxIndex-medianIndex)
 	maxReasonableCurrentSlot := expectedCurrentSlot + MAX_SLOT_SKIP_DISTANCE
-	var slotsToReturn []uint64
 	sort.Sort(sort.Reverse(sort.Float64Slice(recentSlots)))
+	var slotToReturn uint64 = 0
 	for _, slot := range recentSlots {
-		if uint64(slot) <= maxReasonableCurrentSlot {
-			slotsToReturn = append(slotsToReturn, uint64(slot))
+		if uint64(slot) <= maxReasonableCurrentSlot && uint64(slot) > slotToReturn {
+			slotToReturn = uint64(slot)
 		}
 	}
-	return slotsToReturn[len(slotsToReturn)-1], nil
+	return slotToReturn, nil
 }
 
 type LeaderTPUService struct {
-	RecentSlots       RecentLeaderSlots
-	LTPUCache         LeaderTPUCache
+	RecentSlots       *RecentLeaderSlots
+	LTPUCache         *LeaderTPUCache
 	Subscription      *ws.SlotsUpdatesSubscription
 	Connection        *rpc.Client
 	WSConnection      *ws.Client
@@ -152,15 +152,15 @@ func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocket
 	if err != nil {
 		return err
 	}
-	recentSlots := RecentLeaderSlots{}
+	recentSlots := &RecentLeaderSlots{}
 	recentSlots.Load(slot)
 	leaderTPUService.RecentSlots = recentSlots
 	leaderTPUCache := LeaderTPUCache{}
-	err = leaderTPUCache.Load(leaderTPUService.Connection, slot)
+	err = leaderTPUCache.Load(leaderTPUService.Connection, slot, fanout)
 	if err != nil {
 		return err
 	}
-	leaderTPUService.LTPUCache = leaderTPUCache
+	leaderTPUService.LTPUCache = &leaderTPUCache
 	if websocketURL != "" {
 		wsConnection, err := ws.Connect(context.TODO(), websocketURL)
 		if err == nil {
@@ -177,7 +177,7 @@ func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocket
 							}
 							//Slot received first shred, it's still accepting transactions so we record.
 							if message.Type == ws.SlotsUpdatesFirstShredReceived {
-								leaderTPUService.RecentSlots.RecordSlot(message.Slot)
+								leaderTPUService.RecentSlots.RecordSlot(message.Slot, fanout)
 							}
 						}
 					}
@@ -224,32 +224,32 @@ func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots u
 }
 
 func (leaderTPUService *LeaderTPUService) Run(fanout uint64) {
+	var lastClusterRefreshTime = time.Now()
 	for {
-		lastClusterRefreshTime := time.Now()
-		sleepDelay := time.Duration(1000) * time.Millisecond
-		time.Sleep(sleepDelay)
-		if time.Now().UnixMilli()-lastClusterRefreshTime.UnixMilli() > (1000 * 5 * 60) {
+		time.Sleep(1 * time.Second)
+		if time.Now().UnixMilli()-lastClusterRefreshTime.UnixMilli() > 1000*5 {
 			latestTPUSockets, err := leaderTPUService.LTPUCache.FetchClusterTPUSockets()
 			if err != nil {
 				continue
 			}
 			leaderTPUService.LTPUCache.LeaderTPUMap = latestTPUSockets
 			leaderTPUService.LeaderTPUSocketsWithConn(fanout)
+			lastClusterRefreshTime = time.Now()
 		}
 		estimatedCurrentSlot, err := leaderTPUService.RecentSlots.EstimatedCurrentSlot()
 		if err != nil {
 			continue
 		}
 		if int64(estimatedCurrentSlot) >= int64(leaderTPUService.LTPUCache.LastEpochInfoSlot)-int64(leaderTPUService.LTPUCache.SlotsInEpoch) {
-			latestEpochInfo, err := leaderTPUService.Connection.GetEpochInfo(rpc.CommitmentRecent)
+			latestEpochInfo, err := leaderTPUService.Connection.GetEpochInfo(rpc.CommitmentProcessed)
 			if err != nil {
 				continue
 			}
 			leaderTPUService.LTPUCache.SlotsInEpoch = latestEpochInfo.SlotsInEpoch
 			leaderTPUService.LTPUCache.LastEpochInfoSlot = latestEpochInfo.AbsoluteSlot
 		}
-		if estimatedCurrentSlot >= (leaderTPUService.LTPUCache.LastSlot() - MAX_FANOUT_SLOTS) {
-			slotLeaders, err := leaderTPUService.LTPUCache.FetchSlotLeaders(estimatedCurrentSlot, leaderTPUService.LTPUCache.SlotsInEpoch)
+		if estimatedCurrentSlot >= (leaderTPUService.LTPUCache.LastSlot() - fanout) {
+			slotLeaders, err := leaderTPUService.LTPUCache.FetchSlotLeaders(estimatedCurrentSlot, fanout, leaderTPUService.LTPUCache.SlotsInEpoch)
 			if err != nil {
 				continue
 			}
@@ -265,7 +265,7 @@ type TPUClientConfig struct {
 
 type TPUClient struct {
 	FanoutSlots uint64
-	LTPUService LeaderTPUService
+	LTPUService *LeaderTPUService
 	Exit        bool
 	Connection  *rpc.Client
 }
@@ -274,13 +274,13 @@ func (tpuClient *TPUClient) Load(connection *rpc.Client, websocketURL string, co
 	tpuClient.Connection = connection
 	tpuClient.FanoutSlots = uint64(math.Max(math.Min(float64(config.FanoutSlots), float64(MAX_FANOUT_SLOTS)), 1))
 	tpuClient.Exit = false
-	leaderTPUService := LeaderTPUService{}
-	err := leaderTPUService.Load(tpuClient.Connection, websocketURL, config.FanoutSlots)
+	leaderTPUService := &LeaderTPUService{}
+	tpuClient.LTPUService = leaderTPUService
+	err := tpuClient.LTPUService.Load(tpuClient.Connection, websocketURL, tpuClient.FanoutSlots)
 	if err != nil {
 		return err
 	}
-	tpuClient.LTPUService = leaderTPUService
-	tpuClient.LTPUService.LeaderTPUSocketsWithConn(config.FanoutSlots)
+	tpuClient.LTPUService.LeaderTPUSocketsWithConn(tpuClient.FanoutSlots)
 	return nil
 }
 
