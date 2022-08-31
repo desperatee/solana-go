@@ -101,6 +101,28 @@ func (leaderTPUCache *LeaderTPUCache) GetLeaderSockets(fanoutSlots uint64) []str
 	return leaderTPUSockets
 }
 
+func (leaderTPUCache *LeaderTPUCache) GetLeaderSocketsConverted(fanoutSlots uint64) []*net.UDPAddr {
+	var alreadyCheckedLeaders []string
+	var leaderTPUSockets []*net.UDPAddr
+	var checkedSlots uint64 = 0
+	for _, leader := range leaderTPUCache.Leaders {
+		tpuSocket := leaderTPUCache.LeaderTPUMap[leader.String()]
+		if tpuSocket != "" {
+			isDuplicate := CheckIfDuplicate(alreadyCheckedLeaders, leader.String())
+			if !isDuplicate {
+				alreadyCheckedLeaders = append(alreadyCheckedLeaders, leader.String())
+				leaderAddress, _ := net.ResolveUDPAddr("udp", tpuSocket)
+				leaderTPUSockets = append(leaderTPUSockets, leaderAddress)
+			}
+		}
+		checkedSlots++
+		if checkedSlots == fanoutSlots {
+			return leaderTPUSockets
+		}
+	}
+	return leaderTPUSockets
+}
+
 type RecentLeaderSlots struct {
 	RecentSlots []float64
 }
@@ -362,6 +384,15 @@ func (tpuClient *TPUClient) SendRawTransactionSameConn(transaction []byte, amoun
 	for _, leader := range tpuClient.LTPUService.LeaderConnections {
 		for i := 0; i < amount; i++ {
 			leader.Write(transaction)
+		}
+	}
+	return nil
+}
+
+func (tpuClient *TPUClient) SendRawTransactionThroughSocket(transaction []byte, amount int, socket *net.UDPConn) error {
+	for _, leader := range tpuClient.LTPUService.LTPUCache.GetLeaderSocketsConverted(tpuClient.FanoutSlots) {
+		for i := 0; i < amount; i++ {
+			socket.WriteToUDP(transaction, leader)
 		}
 	}
 	return nil
