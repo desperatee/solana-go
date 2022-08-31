@@ -337,6 +337,18 @@ func (tpuClient *TPUClient) SendTransactionSameConn(transaction *solana.Transact
 	return transaction.Signatures[0], nil
 }
 
+func (tpuClient *TPUClient) SendTransactionThroughSocket(transaction *solana.Transaction, amount int, socket *net.UDPConn) (solana.Signature, error) {
+	rawTransaction, err := transaction.MarshalBinary()
+	if err != nil {
+		return solana.Signature{}, err
+	}
+	err = tpuClient.SendRawTransactionThroughSocket(rawTransaction, amount, socket)
+	if err != nil {
+		return solana.Signature{}, err
+	}
+	return transaction.Signatures[0], nil
+}
+
 func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) error {
 	var successes = 0
 	var lastError = ""
