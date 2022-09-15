@@ -107,6 +107,7 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		ReadTimeout:                   5 * time.Second,
 		WriteTimeout:                  5 * time.Second,
 		MaxIdleConnDuration:           time.Hour,
+		MaxConnWaitTimeout:            1 * time.Minute,
 		MaxConns:                      1024 * 1024,
 		DisableHeaderNamesNormalizing: true,
 		DisablePathNormalizing:        true,
