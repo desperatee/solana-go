@@ -22,6 +22,7 @@ import (
 	"errors"
 	"github.com/valyala/fasthttp"
 	"io"
+	"net"
 	"net/url"
 	"time"
 
@@ -111,10 +112,12 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		MaxConns:                      1024 * 1024,
 		DisableHeaderNamesNormalizing: true,
 		DisablePathNormalizing:        true,
-		Dial: (&fasthttp.TCPDialer{
-			Concurrency:      0,
-			DNSCacheDuration: time.Hour,
-		}).Dial,
+		Dial: func(addr string) (net.Conn, error) {
+			return (&fasthttp.TCPDialer{
+				Concurrency:      0,
+				DNSCacheDuration: time.Hour,
+			}).DialTimeout(addr, 10*time.Second)
+		},
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: true,
 			ClientSessionCache: tls.NewLRUClientSessionCache(0),
