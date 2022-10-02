@@ -168,7 +168,7 @@ type LeaderTPUService struct {
 	LeaderConnections []net.Conn
 }
 
-func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocketURL string, fanout uint64, socketsPerLeader int) error {
+func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocketURL string, fanout uint64) error {
 	leaderTPUService.Connection = connection
 	slot, err := leaderTPUService.Connection.GetSlot(rpc.CommitmentProcessed)
 	if err != nil {
@@ -213,103 +213,65 @@ func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocket
 	} else {
 		leaderTPUService.Connection = nil
 	}
-	go leaderTPUService.Run(fanout, socketsPerLeader)
+	go leaderTPUService.Run(fanout)
 	return nil
 }
 
 func (leaderTPUService *LeaderTPUService) LeaderTPUSockets(fanoutSlots uint64) []string {
 	return leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
 }
-func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots uint64, socketsPerLeader int) []string {
-	sockets := leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
-	var conns []net.Conn
-	for _, socket := range sockets {
-		for i := 0; i < socketsPerLeader; i++ {
-			connectionTries := 0
-			var connection net.Conn
-			for {
-				conn, err := net.Dial("udp", socket)
-				if err != nil {
-					if connectionTries < 3 {
-						connectionTries++
-						continue
-					} else {
-						break
-					}
-				}
-				connection = conn
-				break
-			}
-			if connection != nil {
-				conns = append(conns, connection)
-			}
-		}
-	}
-	for _, old := range leaderTPUService.LeaderConnections {
-		old.Close()
-	}
-	leaderTPUService.LeaderConnections = conns
-	return sockets
-}
 
-func (leaderTPUService *LeaderTPUService) Run(fanout uint64, socketsPerLeader int) {
+func (leaderTPUService *LeaderTPUService) Run(fanout uint64) {
 	var lastClusterRefreshTime = time.Now()
+	var sleepMs = 1000
 	for {
-		time.Sleep(1 * time.Second)
 		if time.Now().UnixMilli()-lastClusterRefreshTime.UnixMilli() > 5000*60 {
 			latestTPUSockets, err := leaderTPUService.LTPUCache.FetchClusterTPUSockets()
-			if err != nil {
+			if err != nil || latestTPUSockets == nil {
+				sleepMs = 100
 				continue
 			}
 			leaderTPUService.LTPUCache.LeaderTPUMap = latestTPUSockets
-			leaderTPUService.LeaderTPUSocketsWithConn(fanout, socketsPerLeader)
 			lastClusterRefreshTime = time.Now()
 		}
+
+		time.Sleep(time.Duration(sleepMs) * time.Millisecond)
+
 		currentSlot := leaderTPUService.RecentSlots.EstimatedCurrentSlot()
-		if int64(currentSlot) >= int64(leaderTPUService.LTPUCache.LastEpochInfoSlot)-int64(leaderTPUService.LTPUCache.SlotsInEpoch) {
-			latestEpochInfo, err := leaderTPUService.Connection.GetEpochInfo(rpc.CommitmentProcessed)
-			if err != nil {
-				continue
-			}
-			leaderTPUService.LTPUCache.SlotsInEpoch = latestEpochInfo.SlotsInEpoch
-			leaderTPUService.LTPUCache.LastEpochInfoSlot = latestEpochInfo.AbsoluteSlot
-		}
 		if currentSlot >= (leaderTPUService.LTPUCache.LastSlot() - fanout) {
 			slotLeaders, err := leaderTPUService.LTPUCache.FetchSlotLeaders(currentSlot, leaderTPUService.LTPUCache.SlotsInEpoch)
-			if err != nil {
+			if err != nil || slotLeaders == nil {
+				sleepMs = 100
 				continue
 			}
 			leaderTPUService.LTPUCache.FirstSlot = currentSlot
 			leaderTPUService.LTPUCache.Leaders = slotLeaders
 		}
+		sleepMs = 1000
 	}
 }
 
 type TPUClientConfig struct {
-	FanoutSlots      uint64
-	SocketsPerLeader int
+	FanoutSlots uint64
 }
 
 type TPUClient struct {
-	FanoutSlots      uint64
-	SocketsPerLeader int
-	LTPUService      *LeaderTPUService
-	Exit             bool
-	Connection       *rpc.Client
+	FanoutSlots uint64
+	LTPUService *LeaderTPUService
+	Exit        bool
+	Connection  *rpc.Client
 }
 
 func (tpuClient *TPUClient) Load(connection *rpc.Client, websocketURL string, config TPUClientConfig) error {
 	tpuClient.Connection = connection
 	tpuClient.FanoutSlots = uint64(math.Max(math.Min(float64(config.FanoutSlots), float64(MAX_FANOUT_SLOTS)), 1))
-	tpuClient.SocketsPerLeader = config.SocketsPerLeader
 	tpuClient.Exit = false
 	leaderTPUService := LeaderTPUService{}
 	tpuClient.LTPUService = &leaderTPUService
-	err := tpuClient.LTPUService.Load(tpuClient.Connection, websocketURL, tpuClient.FanoutSlots, tpuClient.SocketsPerLeader)
+	err := tpuClient.LTPUService.Load(tpuClient.Connection, websocketURL, tpuClient.FanoutSlots)
 	if err != nil {
 		return err
 	}
-	tpuClient.LTPUService.LeaderTPUSocketsWithConn(tpuClient.FanoutSlots, tpuClient.SocketsPerLeader)
 	return nil
 }
 
@@ -319,18 +281,6 @@ func (tpuClient *TPUClient) SendTransaction(transaction *solana.Transaction, amo
 		return solana.Signature{}, err
 	}
 	err = tpuClient.SendRawTransaction(rawTransaction, amount)
-	if err != nil {
-		return solana.Signature{}, err
-	}
-	return transaction.Signatures[0], nil
-}
-
-func (tpuClient *TPUClient) SendTransactionSameConn(transaction *solana.Transaction, amount int) (solana.Signature, error) {
-	rawTransaction, err := transaction.MarshalBinary()
-	if err != nil {
-		return solana.Signature{}, err
-	}
-	err = tpuClient.SendRawTransactionSameConn(rawTransaction, amount)
 	if err != nil {
 		return solana.Signature{}, err
 	}
@@ -390,15 +340,6 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 	} else {
 		return nil
 	}
-}
-
-func (tpuClient *TPUClient) SendRawTransactionSameConn(transaction []byte, amount int) error {
-	for _, leader := range tpuClient.LTPUService.LeaderConnections {
-		for i := 0; i < amount; i++ {
-			leader.Write(transaction)
-		}
-	}
-	return nil
 }
 
 func (tpuClient *TPUClient) SendRawTransactionThroughSocket(transaction []byte, amount int, socket *net.UDPConn) error {
