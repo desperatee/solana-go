@@ -2,8 +2,6 @@ package tpu_quic
 
 import (
 	"context"
-	"crypto/ed25519"
-	"crypto/rand"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -16,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -150,13 +149,14 @@ type LeaderTPUService struct {
 	Subscription      *ws.SlotsUpdatesSubscription
 	Connection        *rpc.Client
 	WSConnection      *ws.Client
-	LeaderConnections []quic.Connection
-	LeaderStreams     []quic.SendStream
+	LeaderConnections []quic.EarlyConnection
+	QUICTokenStore    quic.TokenStore
 }
 
 func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocketURL string, fanout uint64) error {
 	leaderTPUService.Connection = connection
 	slot, err := leaderTPUService.Connection.GetSlot(rpc.CommitmentProcessed)
+	leaderTPUService.QUICTokenStore = quic.NewLRUTokenStore(1, 10)
 	if err != nil {
 		return err
 	}
@@ -206,55 +206,60 @@ func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocket
 func (leaderTPUService *LeaderTPUService) LeaderTPUSockets(fanoutSlots uint64) []string {
 	return leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
 }
+
 func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots uint64) []string {
 	sockets := leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
-	var conns []quic.Connection
-	var streams []quic.SendStream
+	var conns []quic.EarlyConnection
 	for _, socket := range sockets {
 		socketSplit := strings.Split(socket, ":")
-		port, _ := strconv.Atoi(socketSplit[1])
-		socketAddress := fmt.Sprintf("%v:%v", socketSplit[0], port+6)
-		pub, priv, _ := ed25519.GenerateKey(rand.Reader)
-		cert, err := NewSelfSignedTLSCertificate(socketSplit[0], pub, priv)
+		port, err := strconv.Atoi(socketSplit[1])
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ip := fmt.Sprintf("%v:%v", socketSplit[0], port+6)
+		_, cert, err := NewSelfSignedTLSCertificate(net.ParseIP("0.0.0.0"))
 		if err != nil {
 			fmt.Println(err)
 		}
 		connectionTries := 0
-		var connection quic.Connection
+		var connection quic.EarlyConnection
 		for {
-			conn, err := quic.DialAddrEarly(socketAddress, &tls.Config{
+			conn, err := quic.DialAddrEarly(ip, &tls.Config{
 				InsecureSkipVerify: true,
 				NextProtos:         []string{"solana-tpu"},
 				Certificates:       []tls.Certificate{cert},
-				CipherSuites: []uint16{
-					tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-					tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-					tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-					tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-					tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-					tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-					tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-					tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-				},
-				CurvePreferences: []tls.CurveID{
-					tls.X25519,
-					tls.CurveP256,
-					tls.CurveP384,
-					tls.CurveP521,
-				},
+				//ServerName:         "Solana node",
+				//CipherSuites: []uint16{
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				//	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				//	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+				//	tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				//	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				//	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+				//	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+				//},
+				//CurvePreferences: []tls.CurveID{
+				//	tls.X25519,
+				//	tls.CurveP256,
+				//	tls.CurveP384,
+				//	tls.CurveP521,
+				//},
 			}, &quic.Config{
 				KeepAlivePeriod:            1 * time.Second,
 				MaxIdleTimeout:             2 * time.Second,
-				InitialStreamReceiveWindow: (1 << 20) * 100,
-				MaxStreamReceiveWindow:     (1 << 20) * 100,
-				MaxConnectionReceiveWindow: (1 << 20) * 100,
-				MaxIncomingUniStreams:      2 ^ 60,
-				MaxIncomingStreams:         2 ^ 60,
+				MaxStreamReceiveWindow:     1252 * 256,
+				MaxConnectionReceiveWindow: 1252 * 256,
+				MaxIncomingUniStreams:      256,
 				DisablePathMTUDiscovery:    true,
+				EnableDatagrams:            false,
+				TokenStore:                 leaderTPUService.QUICTokenStore,
 			})
 			if err != nil {
+				fmt.Println(err)
 				if connectionTries < 3 {
 					connectionTries++
 					continue
@@ -268,33 +273,123 @@ func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots u
 		if connection != nil {
 			conns = append(conns, connection)
 		}
-		streamTries := 0
-		var stream quic.SendStream
+		//streamTries := 0
+		//var stream quic.SendStream
+		//for {
+		//	strm, err := connection.OpenUniStream()
+		//	if err != nil {
+		//		fmt.Println(err)
+		//		if streamTries < 3 {
+		//			streamTries++
+		//			continue
+		//		} else {
+		//			break
+		//		}
+		//	}
+		//	stream = strm
+		//	break
+		//}
+		//if stream != nil {
+		//	streams = append(streams, stream)
+		//}
+	}
+	for _, old := range leaderTPUService.LeaderConnections {
+		old.CloseWithError(0, "")
+	}
+	//for _, old := range leaderTPUService.LeaderStreams {
+	//	old.Close()
+	//}
+	leaderTPUService.LeaderConnections = conns
+	//leaderTPUService.LeaderStreams = streams
+	return sockets
+}
+
+func (leaderTPUService *LeaderTPUService) GetLeaderConnections(fanoutSlots uint64) []quic.Connection {
+	sockets := leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
+	var conns []quic.Connection
+	for _, socket := range sockets {
+		socketSplit := strings.Split(socket, ":")
+		port, err := strconv.Atoi(socketSplit[1])
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		ip := fmt.Sprintf("%v:%v", socketSplit[0], port+6)
+		_, cert, err := NewSelfSignedTLSCertificate(net.ParseIP("127.0.0.1"))
+		if err != nil {
+			fmt.Println(err)
+		}
+		connectionTries := 0
+		var connection quic.Connection
 		for {
-			strm, err := connection.OpenStream()
+			conn, err := quic.DialAddrEarly(ip, &tls.Config{
+				InsecureSkipVerify: true,
+				NextProtos:         []string{"solana-tpu"},
+				Certificates:       []tls.Certificate{cert},
+				//ServerName:         "Solana node",
+				//CipherSuites: []uint16{
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				//	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				//	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+				//	tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				//	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				//	tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				//	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+				//	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+				//},
+				//CurvePreferences: []tls.CurveID{
+				//	tls.X25519,
+				//	tls.CurveP256,
+				//	tls.CurveP384,
+				//	tls.CurveP521,
+				//},
+			}, &quic.Config{
+				KeepAlivePeriod:            1 * time.Second,
+				MaxIdleTimeout:             2 * time.Second,
+				MaxStreamReceiveWindow:     1252 * 256,
+				MaxConnectionReceiveWindow: 1252 * 256,
+				MaxIncomingUniStreams:      256,
+				DisablePathMTUDiscovery:    true,
+				EnableDatagrams:            false,
+			})
 			if err != nil {
-				if streamTries < 3 {
-					streamTries++
+				fmt.Println(err)
+				if connectionTries < 3 {
+					connectionTries++
 					continue
 				} else {
 					break
 				}
 			}
-			stream = strm
+			connection = conn
+			break
 		}
-		if stream != nil {
-			streams = append(streams, stream)
+		if connection != nil {
+			conns = append(conns, connection)
 		}
+		//streamTries := 0
+		//var stream quic.SendStream
+		//for {
+		//	strm, err := connection.OpenUniStream()
+		//	if err != nil {
+		//		fmt.Println(err)
+		//		if streamTries < 3 {
+		//			streamTries++
+		//			continue
+		//		} else {
+		//			break
+		//		}
+		//	}
+		//	stream = strm
+		//	break
+		//}
+		//if stream != nil {
+		//	streams = append(streams, stream)
+		//}
 	}
-	for _, old := range leaderTPUService.LeaderConnections {
-		old.CloseWithError(0, "")
-	}
-	for _, old := range leaderTPUService.LeaderStreams {
-		old.Close()
-	}
-	leaderTPUService.LeaderConnections = conns
-	leaderTPUService.LeaderStreams = streams
-	return sockets
+	return conns
 }
 
 func (leaderTPUService *LeaderTPUService) Run(fanout uint64) {
@@ -340,6 +435,7 @@ type TPUClient struct {
 	LTPUService *LeaderTPUService
 	Exit        bool
 	Connection  *rpc.Client
+	SendMutex   sync.Mutex
 }
 
 func (tpuClient *TPUClient) Load(connection *rpc.Client, websocketURL string, config TPUClientConfig) error {
@@ -426,14 +522,33 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 func (tpuClient *TPUClient) SendRawTransactionSameConn(transaction []byte, amount int) error {
 	var success = 0
 	var lastError error
-	for _, leader := range tpuClient.LTPUService.LeaderStreams {
+	for _, connection := range tpuClient.LTPUService.LeaderConnections {
 		for i := 0; i < amount; i++ {
-			_, err := leader.Write(transaction)
+			tpuClient.SendMutex.Lock()
+			retries := 0
+			var stream quic.SendStream
+			for {
+				strm, err := connection.NextConnection().OpenUniStreamSync(context.Background())
+				if err != nil {
+					if retries < 3 {
+						retries++
+						continue
+					} else {
+						tpuClient.SendMutex.Unlock()
+						return err
+					}
+				}
+				stream = strm
+				break
+			}
+			_, err := stream.Write(transaction)
 			if err == nil {
 				success++
 			} else {
 				lastError = err
 			}
+			stream.Close()
+			tpuClient.SendMutex.Unlock()
 		}
 	}
 	if success == 0 {

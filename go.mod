@@ -35,6 +35,7 @@ require (
 	github.com/streamingfast/logging v0.0.0-20220405224725-2755dab2ce75
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.38.0
+	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/ratelimit v0.2.0

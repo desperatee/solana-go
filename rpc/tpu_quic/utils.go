@@ -8,6 +8,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"math/big"
+	"net"
 	"strconv"
 	"strings"
 )
@@ -42,32 +43,46 @@ func ConvertURLToWS(url string) string {
 	}
 }
 
-func NewSelfSignedTLSCertificate(rawIP string, pub ed25519.PublicKey, priv ed25519.PrivateKey) (tls.Certificate, error) {
-	eidIdentifier := []int{1, 3, 101, 112}
+func NewSelfSignedTLSCertificate(ip net.IP) (*x509.CertPool, tls.Certificate, error) {
+	//eidIdentifier := []int{1, 3, 101, 112}
+	orgPubkey, orgPrivkey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return nil, tls.Certificate{}, err
+	}
+	pk, err := x509.MarshalPKCS8PrivateKey(orgPrivkey)
+	if err != nil {
+		return nil, tls.Certificate{}, err
+	}
+
 	template := x509.Certificate{
-		SerialNumber: big.NewInt(69),
+		SerialNumber: big.NewInt(1658),
 		Subject: pkix.Name{
 			CommonName: "Solana node",
-			ExtraNames: []pkix.AttributeTypeAndValue{{eidIdentifier, rawIP}},
+			//ExtraNames: []pkix.AttributeTypeAndValue{{Type: asn1.ObjectIdentifier{2, 5, 29, 17}, Value: ip}},
 		},
-		KeyUsage:              x509.KeyUsageDigitalSignature,
-		BasicConstraintsValid: true,
+		IPAddresses:        []net.IP{ip},
+		PublicKeyAlgorithm: 16999792,
 	}
-	convertedKey, err := x509.MarshalPKCS8PrivateKey(priv)
+	cert, err := x509.CreateCertificate(rand.Reader, &template, &template, orgPubkey, orgPrivkey)
 	if err != nil {
-		return tls.Certificate{}, err
+		return nil, tls.Certificate{}, err
 	}
-	cert, err := x509.CreateCertificate(rand.Reader, &template, &template, pub, priv)
+	c, err := x509.ParseCertificate(cert)
 	if err != nil {
-		return tls.Certificate{}, err
+		return nil, tls.Certificate{}, err
 	}
 	certPEM := pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: cert,
 	})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "ED25519 PRIVATE KEY", Bytes: convertedKey})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: pk})
+	pool := x509.NewCertPool()
+	pool.AddCert(c)
 	certificate, err := tls.X509KeyPair(certPEM, keyPEM)
-	return certificate, nil
+	if err != nil {
+		return nil, tls.Certificate{}, err
+	}
+	return pool, certificate, err
 }
 
 func NewSelfSignedTLSCertificateChain(rawIP string, pub ed25519.PublicKey, priv ed25519.PrivateKey) (*x509.CertPool, error) {
