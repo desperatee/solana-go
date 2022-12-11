@@ -144,22 +144,25 @@ func (recentLeaderSlots *RecentLeaderSlots) EstimatedCurrentSlot() uint64 {
 }
 
 type LeaderTPUService struct {
-	RecentSlots       *RecentLeaderSlots
-	LTPUCache         *LeaderTPUCache
-	Subscription      *ws.SlotsUpdatesSubscription
-	Connection        *rpc.Client
-	WSConnection      *ws.Client
-	LeaderConnections []quic.EarlyConnection
-	QUICTokenStore    quic.TokenStore
+	RecentSlots    *RecentLeaderSlots
+	LTPUCache      *LeaderTPUCache
+	Subscription   *ws.SlotsUpdatesSubscription
+	Connection     *rpc.Client
+	WSConnection   *ws.Client
+	ConnectionPool *ConnectionPool
 }
 
 func (leaderTPUService *LeaderTPUService) Load(connection *rpc.Client, websocketURL string, fanout uint64) error {
 	leaderTPUService.Connection = connection
 	slot, err := leaderTPUService.Connection.GetSlot(rpc.CommitmentProcessed)
-	leaderTPUService.QUICTokenStore = quic.NewLRUTokenStore(1, 10)
 	if err != nil {
 		return err
 	}
+	connPool, err := NewConnectionPool()
+	if err != nil {
+		return err
+	}
+	leaderTPUService.ConnectionPool = connPool
 	recentSlots := RecentLeaderSlots{}
 	recentSlots.Load(slot)
 	leaderTPUService.RecentSlots = &recentSlots
@@ -209,56 +212,31 @@ func (leaderTPUService *LeaderTPUService) LeaderTPUSockets(fanoutSlots uint64) [
 
 func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots uint64) []string {
 	sockets := leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
-	var conns []quic.EarlyConnection
+	connPool, _ := NewConnectionPool()
 	for _, socket := range sockets {
 		socketSplit := strings.Split(socket, ":")
 		port, err := strconv.Atoi(socketSplit[1])
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
-		ip := fmt.Sprintf("%v:%v", socketSplit[0], port+6)
-		_, cert, err := NewSelfSignedTLSCertificate(net.ParseIP("0.0.0.0"))
-		if err != nil {
-			fmt.Println(err)
-		}
 		connectionTries := 0
-		var connection quic.EarlyConnection
-		for {
-			conn, err := quic.DialAddrEarly(ip, &tls.Config{
-				InsecureSkipVerify: true,
-				NextProtos:         []string{"solana-tpu"},
-				Certificates:       []tls.Certificate{cert},
-			}, &quic.Config{
-				KeepAlivePeriod:            1 * time.Second,
-				MaxIdleTimeout:             2 * time.Second,
-				MaxStreamReceiveWindow:     1252 * 256,
-				MaxConnectionReceiveWindow: 1252 * 256,
-				MaxIncomingUniStreams:      256,
-				DisablePathMTUDiscovery:    true,
-				EnableDatagrams:            false,
-				TokenStore:                 leaderTPUService.QUICTokenStore,
-			})
-			if err != nil {
-				fmt.Println(err)
-				if connectionTries < 3 {
-					connectionTries++
-					continue
-				} else {
-					break
+		for i := 0; i < 4; i++ {
+			for {
+				err = connPool.Create(fmt.Sprintf("%v:%v", socketSplit[0], port+6))
+				if err != nil {
+					if connectionTries < 3 {
+						connectionTries++
+						continue
+					} else {
+						break
+					}
 				}
+				break
 			}
-			connection = conn
-			break
-		}
-		if connection != nil {
-			conns = append(conns, connection)
 		}
 	}
-	for _, old := range leaderTPUService.LeaderConnections {
-		old.CloseWithError(0, "")
-	}
-	leaderTPUService.LeaderConnections = conns
+	go leaderTPUService.ConnectionPool.Clear()
+	leaderTPUService.ConnectionPool = connPool
 	return sockets
 }
 
@@ -269,13 +247,11 @@ func (leaderTPUService *LeaderTPUService) GetLeaderConnections(fanoutSlots uint6
 		socketSplit := strings.Split(socket, ":")
 		port, err := strconv.Atoi(socketSplit[1])
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 		ip := fmt.Sprintf("%v:%v", socketSplit[0], port+6)
 		_, cert, err := NewSelfSignedTLSCertificate(net.ParseIP("127.0.0.1"))
 		if err != nil {
-			fmt.Println(err)
 		}
 		connectionTries := 0
 		var connection quic.Connection
@@ -294,7 +270,6 @@ func (leaderTPUService *LeaderTPUService) GetLeaderConnections(fanoutSlots uint6
 				EnableDatagrams:            false,
 			})
 			if err != nil {
-				fmt.Println(err)
 				if connectionTries < 3 {
 					connectionTries++
 					continue
@@ -442,33 +417,35 @@ func (tpuClient *TPUClient) SendRawTransaction(transaction []byte, amount int) e
 func (tpuClient *TPUClient) SendRawTransactionSameConn(transaction []byte, amount int) error {
 	var success = 0
 	var lastError error
-	for _, connection := range tpuClient.LTPUService.LeaderConnections {
+	for _, socket := range tpuClient.LTPUService.ConnectionPool.CurrentConnections {
 		for i := 0; i < amount; i++ {
-			tpuClient.SendMutex.Lock()
+			connection, err := tpuClient.LTPUService.ConnectionPool.Get(socket)
+			if err != nil {
+				lastError = err
+				continue
+			}
 			retries := 0
 			var stream quic.SendStream
 			for {
-				strm, err := connection.NextConnection().OpenUniStreamSync(context.Background())
+				strm, err := connection.OpenUniStreamSync(context.TODO())
 				if err != nil {
 					if retries < 3 {
 						retries++
 						continue
 					} else {
-						tpuClient.SendMutex.Unlock()
 						return err
 					}
 				}
 				stream = strm
 				break
 			}
-			_, err := stream.Write(transaction)
+			_, err = stream.Write(transaction)
 			if err == nil {
 				success++
 			} else {
 				lastError = err
 			}
 			stream.Close()
-			tpuClient.SendMutex.Unlock()
 		}
 	}
 	if success == 0 {
