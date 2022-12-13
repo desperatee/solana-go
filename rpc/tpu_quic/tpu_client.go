@@ -447,7 +447,11 @@ func (tpuClient *TPUClient) SendRawTransactionSameConn(transaction []byte, amoun
 			if err == nil {
 				success++
 			} else {
-				lastError = err
+				if !strings.Contains(err.Error(), "0x0") {
+					lastError = err
+				} else {
+					success++
+				}
 			}
 			stream.Close()
 		}
