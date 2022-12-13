@@ -7,10 +7,13 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"github.com/desperatee/solana-go"
+	"log"
 	"math/big"
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func CheckIfDuplicate(array []string, item string) bool {
@@ -43,46 +46,35 @@ func ConvertURLToWS(url string) string {
 	}
 }
 
-func NewSelfSignedTLSCertificate(ip net.IP) (*x509.CertPool, tls.Certificate, error) {
-	//eidIdentifier := []int{1, 3, 101, 112}
-	orgPubkey, orgPrivkey, err := ed25519.GenerateKey(rand.Reader)
+func NewSelfSignedTLSCertificate(ip net.IP) (tls.Certificate, error) {
+	wallet := solana.NewWallet()
+	key := ed25519.PrivateKey(wallet.PrivateKey[:])
+
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		return nil, tls.Certificate{}, err
+		log.Fatalf("Failed to generate serial number: %v", err)
 	}
-	pk, err := x509.MarshalPKCS8PrivateKey(orgPrivkey)
-	if err != nil {
-		return nil, tls.Certificate{}, err
-	}
+	notAfter := time.Now().Add(24 * time.Hour)
 
 	template := x509.Certificate{
-		SerialNumber: big.NewInt(1658),
+		SerialNumber: serialNumber,
 		Subject: pkix.Name{
 			CommonName: "Solana node",
-			//ExtraNames: []pkix.AttributeTypeAndValue{{Type: asn1.ObjectIdentifier{2, 5, 29, 17}, Value: ip}},
 		},
-		IPAddresses:        []net.IP{ip},
-		PublicKeyAlgorithm: 16999792,
+		NotBefore:             time.Time{},
+		NotAfter:              notAfter,
+		KeyUsage:              x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		IPAddresses:           []net.IP{ip},
+		BasicConstraintsValid: true,
+		PublicKeyAlgorithm:    16999792,
 	}
-	cert, err := x509.CreateCertificate(rand.Reader, &template, &template, orgPubkey, orgPrivkey)
+	cert, err := x509.CreateCertificate(rand.Reader, &template, &template, key.Public(), key)
 	if err != nil {
-		return nil, tls.Certificate{}, err
+		return tls.Certificate{}, err
 	}
-	c, err := x509.ParseCertificate(cert)
-	if err != nil {
-		return nil, tls.Certificate{}, err
-	}
-	certPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: cert,
-	})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: pk})
-	pool := x509.NewCertPool()
-	pool.AddCert(c)
-	certificate, err := tls.X509KeyPair(certPEM, keyPEM)
-	if err != nil {
-		return nil, tls.Certificate{}, err
-	}
-	return pool, certificate, err
+	return tls.Certificate{Certificate: [][]byte{cert}, PrivateKey: key}, nil
 }
 
 func NewSelfSignedTLSCertificateChain(rawIP string, pub ed25519.PublicKey, priv ed25519.PrivateKey) (*x509.CertPool, error) {

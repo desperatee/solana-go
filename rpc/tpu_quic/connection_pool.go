@@ -1,6 +1,7 @@
 package tpu_quic
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"github.com/lucas-clemente/quic-go"
@@ -17,6 +18,7 @@ type ConnectionPool struct {
 	quicTokenStore     quic.TokenStore
 	tlsConfig          tls.Config
 	CurrentConnections []string
+	Sockets            []*net.UDPConn
 }
 
 func NewConnectionPool() (*ConnectionPool, error) {
@@ -46,7 +48,7 @@ func (p *ConnectionPool) GetDefaultQUICConfiguration() quic.Config {
 }
 
 func (p *ConnectionPool) GetDefaultTLSConfiguration() (tls.Config, error) {
-	_, cert, err := NewSelfSignedTLSCertificate(net.ParseIP("0.0.0.0"))
+	cert, err := NewSelfSignedTLSCertificate(net.ParseIP("127.0.0.1"))
 	if err != nil {
 		return tls.Config{}, err
 	}
@@ -58,10 +60,34 @@ func (p *ConnectionPool) GetDefaultTLSConfiguration() (tls.Config, error) {
 }
 
 func (p *ConnectionPool) Create(address string) error {
-	conn, err := quic.DialAddr(address, &p.tlsConfig, &p.quicConfig)
+	udpSocket, err := net.ListenUDP("udp", nil)
 	if err != nil {
 		return err
 	}
+	p.mutex.Lock()
+	p.Sockets = append(p.Sockets, udpSocket)
+	p.mutex.Unlock()
+	udpAddr, err := net.ResolveUDPAddr("udp", address)
+	if err != nil {
+		return err
+	}
+	var conn quic.Connection
+	tries := 0
+	for {
+		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		connection, err := quic.DialContext(ctx, udpSocket, udpAddr, address, &p.tlsConfig, &p.quicConfig)
+		if err != nil {
+			if tries < 3 {
+				tries++
+				continue
+			} else {
+				return err
+			}
+		}
+		conn = connection
+		break
+	}
+
 	p.mutex.Lock()
 	currentConns := p.connections[address]
 	currentConns = append(currentConns, &conn)
@@ -93,6 +119,9 @@ func (p *ConnectionPool) Get(address string) (quic.Connection, error) {
 
 func (p *ConnectionPool) Clear() {
 	p.mutex.Lock()
+	for _, socket := range p.Sockets {
+		socket.Close()
+	}
 	for _, conns := range p.connections {
 		for _, conn := range conns {
 			(*conn).CloseWithError(0, "")

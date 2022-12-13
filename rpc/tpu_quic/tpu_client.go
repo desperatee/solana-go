@@ -212,7 +212,11 @@ func (leaderTPUService *LeaderTPUService) LeaderTPUSockets(fanoutSlots uint64) [
 
 func (leaderTPUService *LeaderTPUService) LeaderTPUSocketsWithConn(fanoutSlots uint64) []string {
 	sockets := leaderTPUService.LTPUCache.GetLeaderSockets(fanoutSlots)
-	connPool, _ := NewConnectionPool()
+	connPool, err := NewConnectionPool()
+	if err != nil {
+		fmt.Println("CLIENT ERROR: " + err.Error())
+		return []string{}
+	}
 	for _, socket := range sockets {
 		socketSplit := strings.Split(socket, ":")
 		port, err := strconv.Atoi(socketSplit[1])
@@ -250,7 +254,7 @@ func (leaderTPUService *LeaderTPUService) GetLeaderConnections(fanoutSlots uint6
 			continue
 		}
 		ip := fmt.Sprintf("%v:%v", socketSplit[0], port+6)
-		_, cert, err := NewSelfSignedTLSCertificate(net.ParseIP("127.0.0.1"))
+		cert, err := NewSelfSignedTLSCertificate(net.ParseIP("127.0.0.1"))
 		if err != nil {
 		}
 		connectionTries := 0
