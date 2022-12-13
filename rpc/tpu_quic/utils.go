@@ -16,6 +16,27 @@ import (
 	"time"
 )
 
+const (
+	applicationNoError = "Application error 0x0"
+	closedConnError    = "use of closed network connection"
+	noActivity         = "recent network activity"
+)
+
+func isPeerGoingAway(err error) bool {
+	if err == nil {
+		return false
+	}
+	str := err.Error()
+
+	if strings.Contains(str, closedConnError) ||
+		strings.Contains(str, applicationNoError) ||
+		strings.Contains(str, noActivity) {
+		return true
+	} else {
+		return false
+	}
+}
+
 func CheckIfDuplicate(array []string, item string) bool {
 	for _, value := range array {
 		if value == item {
