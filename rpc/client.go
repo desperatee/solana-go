@@ -20,10 +20,11 @@ package rpc
 import (
 	"crypto/tls"
 	"errors"
-	"github.com/valyala/fasthttp"
 	"io"
 	"net/url"
 	"time"
+
+	"github.com/valyala/fasthttp"
 
 	"github.com/desperatee/solana-go/rpc/jsonrpc"
 )
@@ -39,6 +40,7 @@ type Client struct {
 type JSONRPCClient interface {
 	CallForInto(out interface{}, method string, params []interface{}) error
 	CallWithCallback(method string, params []interface{}, callback func(*fasthttp.Request, *fasthttp.Response) error) error
+	CallBatch(requests jsonrpc.RPCRequests) (jsonrpc.RPCResponses, error)
 }
 
 // New creates a new Solana JSON RPC client.
@@ -123,7 +125,7 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		if parsedEndpoint.Port() == "" {
 			client.Addr = parsedEndpoint.Host + ":443"
 		} else {
-			client.Addr = parsedEndpoint.Host
+			client.Addr = parsedEndpoint.Host + ":" + parsedEndpoint.Port()
 		}
 	}
 	if parsedEndpoint.Scheme == "http" {
@@ -131,7 +133,7 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		if parsedEndpoint.Port() == "" {
 			client.Addr = parsedEndpoint.Host + ":80"
 		} else {
-			client.Addr = parsedEndpoint.Host
+			client.Addr = parsedEndpoint.Host + ":" + parsedEndpoint.Port()
 		}
 	}
 	return client, nil
@@ -148,4 +150,10 @@ func (cl *Client) RPCCallWithCallback(
 	callback func(*fasthttp.Request, *fasthttp.Response) error,
 ) error {
 	return cl.rpcClient.CallWithCallback(method, params, callback)
+}
+
+func (cl *Client) RPCCallBatch(
+	requests jsonrpc.RPCRequests,
+) (jsonrpc.RPCResponses, error) {
+	return cl.rpcClient.CallBatch(requests)
 }

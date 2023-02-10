@@ -6,10 +6,11 @@ import (
 	stdjson "encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
+
 	"github.com/davecgh/go-spew/spew"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/valyala/fasthttp"
-	"reflect"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -141,22 +142,25 @@ type RPCClient interface {
 // Params() is a helper function that uses the same parameter syntax as Call().
 //
 // e.g. to manually create an RPCRequest object:
-// request := &RPCRequest{
-//   Method: "myMethod",
-//   Params: Params("Alex", 35, true),
-// }
+//
+//	request := &RPCRequest{
+//	  Method: "myMethod",
+//	  Params: Params("Alex", 35, true),
+//	}
 //
 // If you know what you are doing you can omit the Params() call to avoid some reflection but potentially create incorrect rpc requests:
-//request := &RPCRequest{
-//   Method: "myMethod",
-//   Params: 2, <-- invalid since a single primitive value must be wrapped in an array --> no magic without Params()
-// }
+//
+//	request := &RPCRequest{
+//	  Method: "myMethod",
+//	  Params: 2, <-- invalid since a single primitive value must be wrapped in an array --> no magic without Params()
+//	}
 //
 // correct:
-// request := &RPCRequest{
-//   Method: "myMethod",
-//   Params: []int{2}, <-- invalid since a single primitive value must be wrapped in an array
-// }
+//
+//	request := &RPCRequest{
+//	  Method: "myMethod",
+//	  Params: []int{2}, <-- invalid since a single primitive value must be wrapped in an array
+//	}
 type RPCRequest struct {
 	Method  string      `json:"method"`
 	Params  interface{} `json:"params,omitempty"`
@@ -592,25 +596,28 @@ func (client *rpcClient) doBatchCall(rpcRequest []*RPCRequest) ([]*RPCResponse, 
 // But you should consider to always use NewRequest() instead.
 //
 // e.g. to manually create an RPCRequest object:
-// request := &RPCRequest{
-//   Method: "myMethod",
-//   Params: Params("Alex", 35, true),
-// }
+//
+//	request := &RPCRequest{
+//	  Method: "myMethod",
+//	  Params: Params("Alex", 35, true),
+//	}
 //
 // same with new request:
 // request := NewRequest("myMethod", "Alex", 35, true)
 //
 // If you know what you are doing you can omit the Params() call but potentially create incorrect rpc requests:
-//request := &RPCRequest{
-//   Method: "myMethod",
-//   Params: 2, <-- invalid since a single primitive value must be wrapped in an array --> no magic without Params()
-// }
+//
+//	request := &RPCRequest{
+//	  Method: "myMethod",
+//	  Params: 2, <-- invalid since a single primitive value must be wrapped in an array --> no magic without Params()
+//	}
 //
 // correct:
-// request := &RPCRequest{
-//   Method: "myMethod",
-//   Params: []int{2}, <-- invalid since a single primitive value must be wrapped in an array
-// }
+//
+//	request := &RPCRequest{
+//	  Method: "myMethod",
+//	  Params: []int{2}, <-- invalid since a single primitive value must be wrapped in an array
+//	}
 func Params(params ...interface{}) interface{} {
 	var finalParams interface{}
 

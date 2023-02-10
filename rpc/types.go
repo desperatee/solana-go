@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	bin "github.com/gagliardetto/binary"
+
 	"github.com/desperatee/solana-go"
 )
 
@@ -94,9 +95,33 @@ const (
 )
 
 type TransactionWithMeta struct {
+	// The slot this transaction was processed in.
+	Slot uint64 `json:"slot"`
+
+	// Estimated production time, as Unix timestamp (seconds since the Unix epoch)
+	// of when the transaction was processed.
+	// Nil if not available.
+	BlockTime *solana.UnixTimeSeconds `json:"blockTime" bin:"optional"`
+
 	Transaction *DataBytesOrJSON `json:"transaction"`
+
 	// Transaction status metadata object
-	Meta *TransactionMeta `json:"meta,omitempty"`
+	Meta    *TransactionMeta   `json:"meta,omitempty"`
+	Version TransactionVersion `json:"version"`
+}
+
+func (dt TransactionWithMeta) GetParsedTransaction() (*solana.Transaction, error) {
+	if dt.Transaction == nil {
+		return nil, fmt.Errorf("transaction is nil")
+	}
+	if dt.Transaction.rawDataEncoding != solana.EncodingJSONParsed {
+		return nil, fmt.Errorf("data is not in JSONParsed encoding")
+	}
+	var parsedTransaction solana.Transaction
+	if err := json.Unmarshal(dt.Transaction.asJSON, &parsedTransaction); err != nil {
+		return nil, err
+	}
+	return &parsedTransaction, nil
 }
 
 func (twm TransactionWithMeta) MustGetTransaction() *solana.Transaction {
@@ -117,8 +142,8 @@ func (twm TransactionWithMeta) GetTransaction() (*solana.Transaction, error) {
 }
 
 type TransactionParsed struct {
-	Meta        *TransactionMeta   `json:"meta,omitempty"`
-	Transaction *ParsedTransaction `json:"transaction"`
+	Meta        *TransactionMeta    `json:"meta,omitempty"`
+	Transaction *solana.Transaction `json:"transaction"`
 }
 
 type TokenBalance struct {
@@ -146,6 +171,11 @@ type UiTokenAmount struct {
 
 	// Token amount as a string, accounting for decimals.
 	UiAmountString string `json:"uiAmountString"`
+}
+
+type LoadedAddresses struct {
+	ReadOnly solana.PublicKeySlice `json:"readonly"`
+	Writable solana.PublicKeySlice `json:"writable"`
 }
 
 type TransactionMeta struct {
@@ -182,6 +212,8 @@ type TransactionMeta struct {
 	Status DeprecatedTransactionMetaStatus `json:"status"`
 
 	Rewards []BlockReward `json:"rewards"`
+
+	LoadedAddresses LoadedAddresses `json:"loadedAddresses"`
 }
 
 type InnerInstruction struct {
@@ -193,8 +225,8 @@ type InnerInstruction struct {
 	Instructions []solana.CompiledInstruction `json:"instructions"`
 }
 
-// 	Ok  interface{} `json:"Ok"`  // <null> Transaction was successful
-// 	Err interface{} `json:"Err"` // Transaction failed with TransactionError
+// Ok  interface{} `json:"Ok"`  // <null> Transaction was successful
+// Err interface{} `json:"Err"` // Transaction failed with TransactionError
 type DeprecatedTransactionMetaStatus M
 
 type TransactionSignature struct {
@@ -220,6 +252,25 @@ type TransactionSignature struct {
 type GetAccountInfoResult struct {
 	RPCContext
 	Value *Account `json:"value"`
+}
+
+// GetBinary returns the binary representation of the account data.
+func (a *GetAccountInfoResult) GetBinary() []byte {
+	if a == nil {
+		return nil
+	}
+	if a.Value == nil {
+		return nil
+	}
+	if a.Value.Data == nil {
+		return nil
+	}
+	return a.Value.Data.GetBinary()
+}
+
+// Bytes returns the binary representation of the account data.
+func (a *GetAccountInfoResult) Bytes() []byte {
+	return a.GetBinary()
 }
 
 type IsValidBlockhashResult struct {
@@ -277,7 +328,6 @@ func (dt DataBytesOrJSON) MarshalJSON() ([]byte, error) {
 }
 
 func (wrap *DataBytesOrJSON) UnmarshalJSON(data []byte) error {
-
 	if len(data) == 0 || (len(data) == 4 && string(data) == "null") {
 		// TODO: is this an error?
 		return nil
@@ -305,7 +355,7 @@ func (wrap *DataBytesOrJSON) UnmarshalJSON(data []byte) error {
 			wrap.rawDataEncoding = solana.EncodingJSONParsed
 		}
 	default:
-		return fmt.Errorf("Unknown kind: %v", data)
+		return fmt.Errorf("unknown kind: %v", data)
 	}
 
 	return nil
@@ -391,31 +441,70 @@ const (
 	CommitmentProcessed CommitmentType = "processed"
 )
 
-// Parsed Transaction
 type ParsedTransaction struct {
 	Signatures []solana.Signature `json:"signatures"`
-	Message    Message            `json:"message"`
+	Message    ParsedMessage      `json:"message"`
 }
 
-type Message struct {
-	AccountKeys     []solana.PublicKey   `json:"accountKeys"`
-	RecentBlockhash solana.Hash          `json:"recentBlockhash"`
-	Instructions    []ParsedInstruction  `json:"instructions"`
-	Header          solana.MessageHeader `json:"header"`
+type ParsedTransactionMeta struct {
+	// Error if transaction failed, null if transaction succeeded.
+	// https://github.com/solana-labs/solana/blob/master/sdk/src/transaction.rs#L24
+	Err interface{} `json:"err"`
+
+	// Fee this transaction was charged
+	Fee uint64 `json:"fee"`
+
+	// Array of u64 account balances from before the transaction was processed
+	PreBalances []uint64 `json:"preBalances"`
+
+	// Array of u64 account balances after the transaction was processed
+	PostBalances []uint64 `json:"postBalances"`
+
+	// List of inner instructions or omitted if inner instruction recording
+	// was not yet enabled during this transaction
+	InnerInstructions []ParsedInnerInstruction `json:"innerInstructions"`
+
+	// List of token balances from before the transaction was processed
+	// or omitted if token balance recording was not yet enabled during this transaction
+	PreTokenBalances []TokenBalance `json:"preTokenBalances"`
+
+	// List of token balances from after the transaction was processed
+	// or omitted if token balance recording was not yet enabled during this transaction
+	PostTokenBalances []TokenBalance `json:"postTokenBalances"`
+
+	// Array of string log messages or omitted if log message
+	// recording was not yet enabled during this transaction
+	LogMessages []string `json:"logMessages"`
 }
 
-type AccountKey struct {
+type ParsedInnerInstruction struct {
+	Index        uint64               `json:"index"`
+	Instructions []*ParsedInstruction `json:"instructions"`
+}
+
+type ParsedMessageAccount struct {
 	PublicKey solana.PublicKey `json:"pubkey"`
 	Signer    bool             `json:"signer"`
 	Writable  bool             `json:"writable"`
 }
 
+type ParsedMessage struct {
+	AccountKeys     []ParsedMessageAccount `json:"accountKeys"`
+	Instructions    []*ParsedInstruction   `json:"instructions"`
+	RecentBlockHash string                 `json:"recentBlockhash"`
+}
+
 type ParsedInstruction struct {
-	Accounts       []int64          `json:"accounts,omitempty"`
-	Data           solana.Base58    `json:"data,omitempty"`
-	Parsed         *InstructionInfo `json:"parsed,omitempty"`
-	Program        string           `json:"program,omitempty"`
-	ProgramIDIndex uint16           `json:"programIdIndex"`
+	Program   string                   `json:"program,omitempty"`
+	ProgramId solana.PublicKey         `json:"programId,omitempty"`
+	Parsed    *InstructionInfoEnvelope `json:"parsed,omitempty"`
+	Data      solana.Base58            `json:"data,omitempty"`
+	Accounts  []solana.PublicKey       `json:"accounts,omitempty"`
+}
+
+type InstructionInfoEnvelope struct {
+	asString          string
+	asInstructionInfo *InstructionInfo
 }
 
 type InstructionInfo struct {
@@ -423,15 +512,12 @@ type InstructionInfo struct {
 	InstructionType string                 `json:"type"`
 }
 
-func (p *ParsedInstruction) IsParsed() bool {
-	return p.Parsed != nil
-}
-
 type TransactionOpts struct {
-	Encoding            string         `json:"encoding,omitempty"`
-	SkipPreflight       bool           `json:"skipPreflight,omitempty"`
-	PreflightCommitment CommitmentType `json:"preflightCommitment,omitempty"`
-	MaxRetries          *uint          `json:"maxRetries"`
+	Encoding            solana.EncodingType `json:"encoding,omitempty"`
+	SkipPreflight       bool                `json:"skipPreflight,omitempty"`
+	PreflightCommitment CommitmentType      `json:"preflightCommitment,omitempty"`
+	MaxRetries          *uint               `json:"maxRetries"`
+	MinContextSlot      *uint64             `json:"minContextSlot"`
 }
 
 func (opts *TransactionOpts) ToMap() M {
@@ -452,6 +538,10 @@ func (opts *TransactionOpts) ToMap() M {
 
 	if opts.MaxRetries != nil {
 		obj["maxRetries"] = *opts.MaxRetries
+	}
+
+	if opts.MinContextSlot != nil {
+		obj["minContextSlot"] = *opts.MinContextSlot
 	}
 
 	return obj

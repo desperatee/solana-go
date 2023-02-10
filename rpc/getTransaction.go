@@ -26,6 +26,10 @@ type GetTransactionOpts struct {
 
 	// Desired commitment. "processed" is not supported. If parameter not provided, the default is "finalized".
 	Commitment CommitmentType `json:"commitment,omitempty"`
+
+	// Max transaction version to return in responses.
+	// If the requested block contains a transaction with a higher version, an error will be returned.
+	MaxSupportedTransactionVersion *uint64
 }
 
 // GetTransaction returns transaction details for a confirmed transaction.
@@ -56,6 +60,9 @@ func (cl *Client) GetTransaction(
 		if opts.Commitment != "" {
 			obj["commitment"] = opts.Commitment
 		}
+		if opts.Commitment != "" {
+			obj["maxSupportedTransactionVersion"] = *opts.MaxSupportedTransactionVersion
+		}
 		if len(obj) > 0 {
 			params = append(params, obj)
 		}
@@ -81,6 +88,7 @@ type GetTransactionResult struct {
 
 	Transaction *TransactionResultEnvelope `json:"transaction" bin:"optional"`
 	Meta        *TransactionMeta           `json:"meta,omitempty" bin:"optional"`
+	Version     TransactionVersion         `json:"version"`
 }
 
 // TransactionResultEnvelope will contain a *ParsedTransaction if the requested encoding is `solana.EncodingJSON`
@@ -88,7 +96,7 @@ type GetTransactionResult struct {
 // or a `solana.Data` in case of EncodingBase58, EncodingBase64.
 type TransactionResultEnvelope struct {
 	asDecodedBinary     solana.Data
-	asParsedTransaction *ParsedTransaction
+	asParsedTransaction *solana.Transaction
 }
 
 func (wrap TransactionResultEnvelope) MarshalJSON() ([]byte, error) {
@@ -138,10 +146,18 @@ func (dt *TransactionResultEnvelope) GetData() solana.Data {
 	return dt.asDecodedBinary
 }
 
-// GetRawJSON returns a *ParsedTransaction when the data
+// GetRawJSON returns a *solana.Transaction when the data
 // encoding is EncodingJSON.
-func (dt *TransactionResultEnvelope) GetParsedTransaction() *ParsedTransaction {
-	return dt.asParsedTransaction
+func (dt *TransactionResultEnvelope) GetTransaction() (*solana.Transaction, error) {
+	if dt.asDecodedBinary.Content != nil {
+		tx := new(solana.Transaction)
+		err := tx.UnmarshalWithDecoder(bin.NewBinDecoder(dt.asDecodedBinary.Content))
+		if err != nil {
+			return nil, err
+		}
+		return tx, nil
+	}
+	return dt.asParsedTransaction, nil
 }
 
 func (obj TransactionResultEnvelope) MarshalWithEncoder(encoder *bin.Encoder) (err error) {

@@ -7,7 +7,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,12 +79,30 @@ type GetAccountInfoOpts struct {
 	//
 	// This parameter is optional.
 	DataSlice *DataSlice
+
+	// The minimum slot that the request can be evaluated at.
+	// This parameter is optional.
+	MinContextSlot *uint64
 }
 
 // GetAccountInfoWithOpts returns all information associated with the account of provided publicKey.
 // You can specify the encoding of the returned data with the encoding parameter.
 // You can limit the returned account data with the offset and length parameters.
 func (cl *Client) GetAccountInfoWithOpts(
+	account solana.PublicKey,
+	opts *GetAccountInfoOpts,
+) (out *GetAccountInfoResult, err error) {
+	out, err = cl.getAccountInfoWithOpts(account, opts)
+	if err != nil {
+		return nil, err
+	}
+	if out.Value == nil {
+		return nil, ErrNotFound
+	}
+	return out, nil
+}
+
+func (cl *Client) getAccountInfoWithOpts(
 	account solana.PublicKey,
 	opts *GetAccountInfoOpts,
 ) (out *GetAccountInfoResult, err error) {
@@ -110,6 +128,9 @@ func (cl *Client) GetAccountInfoWithOpts(
 				return nil, errors.New("cannot use dataSlice with EncodingJSONParsed")
 			}
 		}
+		if opts.MinContextSlot != nil {
+			obj["minContextSlot"] = *opts.MinContextSlot
+		}
 	}
 
 	params := []interface{}{account}
@@ -124,9 +145,5 @@ func (cl *Client) GetAccountInfoWithOpts(
 	if out == nil {
 		return nil, errors.New("expected a value, got null result")
 	}
-	if out.Value == nil {
-		return nil, ErrNotFound
-	}
-
 	return out, nil
 }

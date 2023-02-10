@@ -1,8 +1,9 @@
 package rpc
 
 import (
-	"github.com/valyala/fasthttp"
 	"io"
+
+	"github.com/valyala/fasthttp"
 
 	"github.com/desperatee/solana-go/rpc/jsonrpc"
 	"go.uber.org/ratelimit"
@@ -48,6 +49,13 @@ func (wr *clientWithRateLimiting) CallWithCallback(
 ) error {
 	wr.rateLimiter.Take()
 	return wr.rpcClient.CallWithCallback(method, params, callback)
+}
+
+func (wr *clientWithRateLimiting) CallBatch(
+	requests jsonrpc.RPCRequests,
+) (jsonrpc.RPCResponses, error) {
+	wr.rateLimiter.Take()
+	return wr.rpcClient.CallBatch(requests)
 }
 
 // Close closes clientWithRateLimiting.

@@ -18,6 +18,7 @@
 package solana
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/ed25519"
 	crypto_rand "crypto/rand"
@@ -26,9 +27,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
+	"sort"
 
 	"filippo.io/edwards25519"
 	"github.com/mr-tron/base58"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
 type PrivateKey []byte
@@ -101,6 +105,14 @@ func (k PrivateKey) PublicKey() PublicKey {
 	return publicKey
 }
 
+// PK is a convenience alias for PublicKey
+type PK = PublicKey
+
+func (p PublicKey) Verify(message []byte, signature Signature) bool {
+	pub := ed25519.PublicKey(p[:])
+	return ed25519.Verify(pub, message, signature[:])
+}
+
 type PublicKey [PublicKeyLength]byte
 
 func PublicKeyFromBytes(in []byte) (out PublicKey) {
@@ -116,6 +128,11 @@ func PublicKeyFromBytes(in []byte) (out PublicKey) {
 
 	copy(out[:], in[0:max])
 	return
+}
+
+// MPK is a convenience alias for MustPublicKeyFromBase58
+func MPK(in string) PublicKey {
+	return MustPublicKeyFromBase58(in)
 }
 
 func MustPublicKeyFromBase58(in string) PublicKey {
@@ -165,8 +182,56 @@ func (p *PublicKey) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
+// MarshalBSON implements the bson.Marshaler interface.
+func (p PublicKey) MarshalBSON() ([]byte, error) {
+	return bson.Marshal(p.String())
+}
+
+// UnmarshalBSON implements the bson.Unmarshaler interface.
+func (p *PublicKey) UnmarshalBSON(data []byte) (err error) {
+	var s string
+	if err := bson.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	*p, err = PublicKeyFromBase58(s)
+	if err != nil {
+		return fmt.Errorf("invalid public key %q: %w", s, err)
+	}
+	return nil
+}
+
+// MarshalBSONValue implements the bson.ValueMarshaler interface.
+func (p PublicKey) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bson.MarshalValue(p.String())
+}
+
+// UnmarshalBSONValue implements the bson.ValueUnmarshaler interface.
+func (p *PublicKey) UnmarshalBSONValue(t bsontype.Type, data []byte) (err error) {
+	var s string
+	if err := bson.Unmarshal(data, &s); err != nil {
+		return err
+	}
+
+	*p, err = PublicKeyFromBase58(s)
+	if err != nil {
+		return fmt.Errorf("invalid public key %q: %w", s, err)
+	}
+	return nil
+}
+
 func (p PublicKey) Equals(pb PublicKey) bool {
 	return p == pb
+}
+
+// IsAnyOf checks if p is equals to any of the provided keys.
+func (p PublicKey) IsAnyOf(keys ...PublicKey) bool {
+	for _, k := range keys {
+		if p.Equals(k) {
+			return true
+		}
+	}
+	return false
 }
 
 // ToPointer returns a pointer to the pubkey.
@@ -248,6 +313,145 @@ func (slice PublicKeySlice) Has(pubkey PublicKey) bool {
 	return false
 }
 
+func (slice PublicKeySlice) Len() int {
+	return len(slice)
+}
+
+func (slice PublicKeySlice) Less(i, j int) bool {
+	return bytes.Compare(slice[i][:], slice[j][:]) < 0
+}
+
+func (slice PublicKeySlice) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
+// Sort sorts the slice.
+func (slice PublicKeySlice) Sort() {
+	sort.Sort(slice)
+}
+
+// Dedupe returns a new slice with all duplicate pubkeys removed.
+func (slice PublicKeySlice) Dedupe() PublicKeySlice {
+	slice.Sort()
+	deduped := make(PublicKeySlice, 0)
+	for i := 0; i < len(slice); i++ {
+		if i == 0 || !slice[i].Equals(slice[i-1]) {
+			deduped = append(deduped, slice[i])
+		}
+	}
+	return deduped
+}
+
+// Contains returns true if the slice contains the provided pubkey.
+func (slice PublicKeySlice) Contains(pubkey PublicKey) bool {
+	for _, key := range slice {
+		if key.Equals(pubkey) {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsAll returns true if all the provided pubkeys are present in the slice.
+func (slice PublicKeySlice) ContainsAll(pubkeys PublicKeySlice) bool {
+	for _, pubkey := range pubkeys {
+		if !slice.Contains(pubkey) {
+			return false
+		}
+	}
+	return true
+}
+
+// ContainsAny returns true if any of the provided pubkeys are present in the slice.
+func (slice PublicKeySlice) ContainsAny(pubkeys PublicKeySlice) bool {
+	for _, pubkey := range pubkeys {
+		if slice.Contains(pubkey) {
+			return true
+		}
+	}
+	return false
+}
+
+func (slice PublicKeySlice) ToBase58() []string {
+	out := make([]string, len(slice))
+	for i, pubkey := range slice {
+		out[i] = pubkey.String()
+	}
+	return out
+}
+
+func (slice PublicKeySlice) ToBytes() [][]byte {
+	out := make([][]byte, len(slice))
+	for i, pubkey := range slice {
+		out[i] = pubkey.Bytes()
+	}
+	return out
+}
+
+func (slice PublicKeySlice) ToPointers() []*PublicKey {
+	out := make([]*PublicKey, len(slice))
+	for i, pubkey := range slice {
+		out[i] = pubkey.ToPointer()
+	}
+	return out
+}
+
+// Removed returns the elements that are present in `a` but not in `b`.
+func (a PublicKeySlice) Removed(b PublicKeySlice) PublicKeySlice {
+	var diff PublicKeySlice
+	for _, pubkey := range a {
+		if !b.Contains(pubkey) {
+			diff = append(diff, pubkey)
+		}
+	}
+	return diff.Dedupe()
+}
+
+// Added returns the elements that are present in `b` but not in `a`.
+func (a PublicKeySlice) Added(b PublicKeySlice) PublicKeySlice {
+	return b.Removed(a)
+}
+
+// Intersect returns the intersection of two PublicKeySlices, i.e. the elements
+// that are in both PublicKeySlices.
+// The returned PublicKeySlice is sorted and deduped.
+func (prev PublicKeySlice) Intersect(next PublicKeySlice) PublicKeySlice {
+	var intersect PublicKeySlice
+	for _, pubkey := range prev {
+		if next.Contains(pubkey) {
+			intersect = append(intersect, pubkey)
+		}
+	}
+	return intersect.Dedupe()
+}
+
+// Equals returns true if the two PublicKeySlices are equal (same order of same keys).
+func (slice PublicKeySlice) Equals(other PublicKeySlice) bool {
+	if len(slice) != len(other) {
+		return false
+	}
+	for i, pubkey := range slice {
+		if !pubkey.Equals(other[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// Same returns true if the two slices contain the same public keys,
+// but not necessarily in the same order.
+func (slice PublicKeySlice) Same(other PublicKeySlice) bool {
+	if len(slice) != len(other) {
+		return false
+	}
+	for _, pubkey := range slice {
+		if !other.Contains(pubkey) {
+			return false
+		}
+	}
+	return true
+}
+
 // Split splits the slice into chunks of the specified size.
 func (slice PublicKeySlice) Split(chunkSize int) []PublicKeySlice {
 	divided := make([]PublicKeySlice, 0)
@@ -269,6 +473,32 @@ func (slice PublicKeySlice) Split(chunkSize int) []PublicKeySlice {
 	}
 
 	return divided
+}
+
+// Last returns the last element of the slice.
+// Returns nil if the slice is empty.
+func (slice PublicKeySlice) Last() *PublicKey {
+	if len(slice) == 0 {
+		return nil
+	}
+	return slice[len(slice)-1].ToPointer()
+}
+
+// First returns the first element of the slice.
+// Returns nil if the slice is empty.
+func (slice PublicKeySlice) First() *PublicKey {
+	if len(slice) == 0 {
+		return nil
+	}
+	return slice[0].ToPointer()
+}
+
+// GetAddedRemoved compares to the `next` pubkey slice, and returns
+// two slices:
+// - `added` is the slice of pubkeys that are present in `next` but NOT present in `previous`.
+// - `removed` is the slice of pubkeys that are present in `previous` but are NOT present in `next`.
+func (prev PublicKeySlice) GetAddedRemoved(next PublicKeySlice) (added PublicKeySlice, removed PublicKeySlice) {
+	return next.Removed(prev), prev.Removed(next)
 }
 
 // GetAddedRemovedPubkeys accepts two slices of pubkeys (`previous` and `next`), and returns

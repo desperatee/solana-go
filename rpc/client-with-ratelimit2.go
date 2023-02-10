@@ -1,10 +1,11 @@
 package rpc
 
 import (
+	"io"
+
 	"github.com/desperatee/solana-go/rpc/jsonrpc"
 	"github.com/valyala/fasthttp"
 	"golang.org/x/time/rate"
-	"io"
 )
 
 var _ JSONRPCClient = &clientWithLimiter{}
@@ -48,6 +49,12 @@ func (wr *clientWithLimiter) CallWithCallback(
 	callback func(*fasthttp.Request, *fasthttp.Response) error,
 ) error {
 	return wr.rpcClient.CallWithCallback(method, params, callback)
+}
+
+func (wr *clientWithLimiter) CallBatch(
+	requests jsonrpc.RPCRequests,
+) (jsonrpc.RPCResponses, error) {
+	return wr.rpcClient.CallBatch(requests)
 }
 
 // Close closes clientWithLimiter.

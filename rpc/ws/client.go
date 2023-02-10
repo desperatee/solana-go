@@ -37,6 +37,8 @@ type result interface{}
 type Client struct {
 	rpcURL                  string
 	conn                    *websocket.Conn
+	connCtx                 context.Context
+	connCtxCancel           context.CancelFunc
 	lock                    sync.RWMutex
 	subscriptionByRequestID map[uint64]*Subscription
 	subscriptionByWSSubID   map[uint64]*Subscription
@@ -70,8 +72,12 @@ func ConnectWithOptions(ctx context.Context, rpcEndpoint string, opt *Options) (
 
 	dialer := &websocket.Dialer{
 		Proxy:             http.ProxyFromEnvironment,
-		HandshakeTimeout:  45 * time.Second,
+		HandshakeTimeout:  DefaultHandshakeTimeout,
 		EnableCompression: true,
+	}
+
+	if opt != nil && opt.HandshakeTimeout > 0 {
+		dialer.HandshakeTimeout = opt.HandshakeTimeout
 	}
 
 	var httpHeader http.Header = nil
@@ -83,12 +89,15 @@ func ConnectWithOptions(ctx context.Context, rpcEndpoint string, opt *Options) (
 		return nil, fmt.Errorf("new ws client: dial: %w", err)
 	}
 
+	c.connCtx, c.connCtxCancel = context.WithCancel(context.Background())
 	go func() {
 		c.conn.SetReadDeadline(time.Now().Add(pongWait))
 		c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 		ticker := time.NewTicker(pingPeriod)
 		for {
 			select {
+			case <-c.connCtx.Done():
+				return
 			case <-ticker.C:
 				c.sendPing()
 			}
@@ -111,17 +120,23 @@ func (c *Client) sendPing() {
 func (c *Client) Close() {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	c.connCtxCancel()
 	c.conn.Close()
 }
 
 func (c *Client) receiveMessages() {
 	for {
-		_, message, err := c.conn.ReadMessage()
-		if err != nil {
-			c.closeAllSubscription(err)
+		select {
+		case <-c.connCtx.Done():
 			return
+		default:
+			_, message, err := c.conn.ReadMessage()
+			if err != nil {
+				c.closeAllSubscription(err)
+				return
+			}
+			c.handleMessage(message)
 		}
-		c.handleMessage(message)
 	}
 }
 
