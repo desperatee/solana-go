@@ -125,7 +125,7 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		if parsedEndpoint.Port() == "" {
 			client.Addr = parsedEndpoint.Host + ":443"
 		} else {
-			client.Addr = parsedEndpoint.Host + ":" + parsedEndpoint.Port()
+			client.Addr = parsedEndpoint.Host
 		}
 	}
 	if parsedEndpoint.Scheme == "http" {
@@ -133,7 +133,7 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		if parsedEndpoint.Port() == "" {
 			client.Addr = parsedEndpoint.Host + ":80"
 		} else {
-			client.Addr = parsedEndpoint.Host + ":" + parsedEndpoint.Port()
+			client.Addr = parsedEndpoint.Host
 		}
 	}
 	return client, nil
