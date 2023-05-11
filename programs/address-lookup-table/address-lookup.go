@@ -1,58 +1,15 @@
 package addresslookuptable
 
 import (
-	"context"
 	"fmt"
 	"math"
 
 	"github.com/desperatee/solana-go"
-	"github.com/desperatee/solana-go/rpc"
 	bin "github.com/gagliardetto/binary"
 )
 
 // The serialized size of lookup table metadata.
 const LOOKUP_TABLE_META_SIZE = 56
-
-// DecodeAddressLookupTableState decodes the given account bytes into a AddressLookupTableState.
-func DecodeAddressLookupTableState(data []byte) (*AddressLookupTableState, error) {
-	decoder := bin.NewBinDecoder(data)
-	var state AddressLookupTableState
-	if err := state.UnmarshalWithDecoder(decoder); err != nil {
-		return nil, err
-	}
-	return &state, nil
-}
-
-func GetAddressLookupTable(
-	ctx context.Context,
-	rpcClient *rpc.Client,
-	address solana.PublicKey,
-) (*AddressLookupTableState, error) {
-	account, err := rpcClient.GetAccountInfo(ctx, address)
-	if err != nil {
-		return nil, err
-	}
-	if account == nil {
-		return nil, fmt.Errorf("account not found")
-	}
-	return DecodeAddressLookupTableState(account.GetBinary())
-}
-
-func GetAddressLookupTableStateWithOpts(
-	ctx context.Context,
-	rpcClient *rpc.Client,
-	address solana.PublicKey,
-	opts *rpc.GetAccountInfoOpts,
-) (*AddressLookupTableState, error) {
-	account, err := rpcClient.GetAccountInfoWithOpts(ctx, address, opts)
-	if err != nil {
-		return nil, err
-	}
-	if account == nil {
-		return nil, fmt.Errorf("account not found")
-	}
-	return DecodeAddressLookupTableState(account.GetBinary())
-}
 
 type AddressLookupTableState struct {
 	TypeIndex                  uint32
