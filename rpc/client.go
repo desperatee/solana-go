@@ -58,6 +58,21 @@ func New(rpcEndpoint string) (*Client, error) {
 	return NewWithCustomRPCClient(rpcClient), nil
 }
 
+// New creates a new Solana JSON RPC client (with read timeout).
+// Client is safe for concurrent use by multiple goroutines.
+func NewWithReadTimeout(rpcEndpoint string, timeout time.Duration) (*Client, error) {
+	client, err := newHTTPWithReadTimeout(rpcEndpoint, timeout)
+	if err != nil {
+		return nil, nil
+	}
+	opts := &jsonrpc.RPCClientOpts{
+		HTTPClient: client,
+	}
+
+	rpcClient := jsonrpc.NewClientWithOpts(rpcEndpoint, opts)
+	return NewWithCustomRPCClient(rpcClient), nil
+}
+
 // New creates a new Solana JSON RPC client with the provided custom headers.
 // The provided headers will be added to each RPC request sent via this RPC client.
 func NewWithHeaders(rpcEndpoint string, headers map[string]string) (*Client, error) {
@@ -106,6 +121,46 @@ func newHTTP(rpcEndpoint string) (*fasthttp.HostClient, error) {
 		return nil, nil
 	}
 	client := &fasthttp.HostClient{
+		MaxIdleConnDuration:           time.Hour,
+		MaxConns:                      1024 * 1024,
+		DisableHeaderNamesNormalizing: true,
+		DisablePathNormalizing:        true,
+		Dial: (&fasthttp.TCPDialer{
+			Concurrency:      0,
+			DNSCacheDuration: time.Hour,
+		}).Dial,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			ClientSessionCache: tls.NewLRUClientSessionCache(0),
+			ServerName:         parsedEndpoint.Hostname(),
+		},
+	}
+	if parsedEndpoint.Scheme == "https" {
+		client.IsTLS = true
+		if parsedEndpoint.Port() == "" {
+			client.Addr = parsedEndpoint.Host + ":443"
+		} else {
+			client.Addr = parsedEndpoint.Host
+		}
+	}
+	if parsedEndpoint.Scheme == "http" {
+		client.IsTLS = false
+		if parsedEndpoint.Port() == "" {
+			client.Addr = parsedEndpoint.Host + ":80"
+		} else {
+			client.Addr = parsedEndpoint.Host
+		}
+	}
+	return client, nil
+}
+
+func newHTTPWithReadTimeout(rpcEndpoint string, timeout time.Duration) (*fasthttp.HostClient, error) {
+	parsedEndpoint, err := url.Parse(rpcEndpoint)
+	if err != nil {
+		return nil, nil
+	}
+	client := &fasthttp.HostClient{
+		ReadTimeout:                   timeout,
 		MaxIdleConnDuration:           time.Hour,
 		MaxConns:                      1024 * 1024,
 		DisableHeaderNamesNormalizing: true,
