@@ -47,7 +47,7 @@ const (
 
 // LogsSubscribe subscribes to transaction logging.
 func (cl *Client) LogsSubscribe(
-// Filter criteria for the logs to receive results by account type.
+	// Filter criteria for the logs to receive results by account type.
 	filter LogsSubscribeFilterType,
 	commitment rpc.CommitmentType, // (optional)
 ) (*LogSubscription, error) {
@@ -59,9 +59,9 @@ func (cl *Client) LogsSubscribe(
 
 // LogsSubscribe subscribes to all transactions that mention the provided Pubkey.
 func (cl *Client) LogsSubscribeMentions(
-// Subscribe to all transactions that mention the provided Pubkey.
+	// Subscribe to all transactions that mention the provided Pubkey.
 	mentions solana.PublicKey,
-// (optional)
+	// (optional)
 	commitment rpc.CommitmentType,
 ) (*LogSubscription, error) {
 	return cl.logsSubscribe(
@@ -109,11 +109,30 @@ type LogSubscription struct {
 
 func (sw *LogSubscription) Recv() (*LogResult, error) {
 	select {
-	case d := <-sw.sub.stream:
+	case d, ok := <-sw.sub.stream:
+		if !ok {
+			return nil, ErrSubscriptionClosed
+		}
 		return d.(*LogResult), nil
 	case err := <-sw.sub.err:
 		return nil, err
 	}
+}
+
+func (sw *LogSubscription) Err() <-chan error {
+	return sw.sub.err
+}
+func (sw *LogSubscription) Response() <-chan *LogResult {
+	typedChan := make(chan *LogResult, 1)
+	go func(ch chan *LogResult) {
+		// TODO: will this subscription yield more than one result?
+		d, ok := <-sw.sub.stream
+		if !ok {
+			return
+		}
+		ch <- d.(*LogResult)
+	}(typedChan)
+	return typedChan
 }
 
 func (sw *LogSubscription) Unsubscribe() {

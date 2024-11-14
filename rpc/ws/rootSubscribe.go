@@ -44,11 +44,30 @@ type RootSubscription struct {
 
 func (sw *RootSubscription) Recv() (*RootResult, error) {
 	select {
-	case d := <-sw.sub.stream:
+	case d, ok := <-sw.sub.stream:
+		if !ok {
+			return nil, ErrSubscriptionClosed
+		}
 		return d.(*RootResult), nil
 	case err := <-sw.sub.err:
 		return nil, err
 	}
+}
+
+func (sw *RootSubscription) Err() <-chan error {
+	return sw.sub.err
+}
+func (sw *RootSubscription) Response() <-chan *RootResult {
+	typedChan := make(chan *RootResult, 1)
+	go func(ch chan *RootResult) {
+		// TODO: will this subscription yield more than one result?
+		d, ok := <-sw.sub.stream
+		if !ok {
+			return
+		}
+		ch <- d.(*RootResult)
+	}(typedChan)
+	return typedChan
 }
 
 func (sw *RootSubscription) Unsubscribe() {

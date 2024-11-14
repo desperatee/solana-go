@@ -61,11 +61,30 @@ type VoteSubscription struct {
 
 func (sw *VoteSubscription) Recv() (*VoteResult, error) {
 	select {
-	case d := <-sw.sub.stream:
+	case d, ok := <-sw.sub.stream:
+		if !ok {
+			return nil, ErrSubscriptionClosed
+		}
 		return d.(*VoteResult), nil
 	case err := <-sw.sub.err:
 		return nil, err
 	}
+}
+
+func (sw *VoteSubscription) Err() <-chan error {
+	return sw.sub.err
+}
+func (sw *VoteSubscription) Response() <-chan *VoteResult {
+	typedChan := make(chan *VoteResult, 1)
+	go func(ch chan *VoteResult) {
+		// TODO: will this subscription yield more than one result?
+		d, ok := <-sw.sub.stream
+		if !ok {
+			return
+		}
+		ch <- d.(*VoteResult)
+	}(typedChan)
+	return typedChan
 }
 
 func (sw *VoteSubscription) Unsubscribe() {
