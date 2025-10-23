@@ -24,9 +24,9 @@ import (
 	"sort"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/desperatee/zap"
 	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/treeout"
-	"go.uber.org/zap"
 
 	"github.com/desperatee/solana-go/text"
 )

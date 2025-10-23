@@ -28,8 +28,8 @@ import (
 
 	"github.com/desperatee/solana-go"
 	"github.com/desperatee/solana-go/text"
+	"github.com/desperatee/zap"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func Test_AccountSubscribe(t *testing.T) {

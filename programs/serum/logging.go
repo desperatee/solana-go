@@ -18,8 +18,8 @@
 package serum
 
 import (
+	"github.com/desperatee/zap"
 	"github.com/streamingfast/logging"
-	"go.uber.org/zap"
 )
 
 var zlog = zap.NewNop()

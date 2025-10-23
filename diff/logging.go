@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/desperatee/zap"
 	"github.com/streamingfast/logging"
-	"go.uber.org/zap"
 )
 
 var traceEnabled = logging.IsTraceEnabled("solana-go", "github.com/desperatee/solana-go/diff")

@@ -20,8 +20,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/desperatee/zap"
 	"github.com/google/go-cmp/cmp"
-	"go.uber.org/zap"
 )
 
 type Diffeable interface {

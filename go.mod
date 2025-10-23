@@ -14,6 +14,7 @@ require (
 	github.com/GeertJohan/go.rice v1.0.0
 	github.com/buger/jsonparser v1.1.1
 	github.com/davecgh/go-spew v1.1.1
+	github.com/desperatee/zap v0.0.0
 	github.com/fatih/color v1.9.0
 	github.com/google/go-cmp v0.5.8
 	github.com/gorilla/rpc v1.2.0
@@ -32,14 +33,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.1
 	github.com/streamingfast/logging v0.0.0-20221209193439-bff11742bf4c
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.1
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/valyala/fasthttp v1.38.0
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/ratelimit v0.2.0
-	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.1.1-0.20221102194838-fc697a31fa06 // indirect
