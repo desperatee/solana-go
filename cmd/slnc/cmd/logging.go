@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	zapbox "github.com/desperatee/solana-go/zap-box"
-	"github.com/desperatee/zap"
-	"github.com/desperatee/zap/zapcore"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/streamingfast/logging"
 )

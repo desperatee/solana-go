@@ -28,9 +28,9 @@ import (
 	"time"
 
 	"github.com/buger/jsonparser"
-	"github.com/desperatee/zap"
 	"github.com/gorilla/rpc/v2/json2"
 	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
 )
 
 var ErrSubscriptionClosed = errors.New("subscription closed")

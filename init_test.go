@@ -15,7 +15,7 @@
 package solana
 
 import (
-	"github.com/desperatee/zap"
+	"go.uber.org/zap"
 )
 
 func init() {

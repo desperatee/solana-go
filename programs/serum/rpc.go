@@ -25,8 +25,8 @@ import (
 	"github.com/desperatee/solana-go"
 	"github.com/desperatee/solana-go/rpc"
 	"github.com/desperatee/solana-go/rpc/ws"
-	"github.com/desperatee/zap"
 	bin "github.com/gagliardetto/binary"
+	"go.uber.org/zap"
 )
 
 //go:generate rice embed-go

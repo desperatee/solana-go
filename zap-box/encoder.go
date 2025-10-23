@@ -24,12 +24,12 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/desperatee/zap"
-	"github.com/desperatee/zap/buffer"
-	"github.com/desperatee/zap/zapcore"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/logrusorgru/aurora"
 	. "github.com/logrusorgru/aurora"
+	"go.uber.org/zap"
+	"go.uber.org/zap/buffer"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
